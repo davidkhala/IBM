@@ -6,6 +6,10 @@ Resource Unit: RU
 # Lite plan
 
 total 500 RUs, not renewable
+- 5 RUs/day at least
+
+Available regions: Tokyo, Frankfurt, Dallas
+- no overlapping with watsonx.data integration Trial region
 
 # Enterprise
 
