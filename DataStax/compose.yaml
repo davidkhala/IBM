@@ -1,0 +1,20 @@
+x-dse-base: &dse-base
+  image: datastax/dse-server:6.8.64
+  platform: linux/amd64 # don't have arm images yet
+  environment:
+    DS_LICENSE: accept
+services:
+  core:
+    <<: *dse-base
+  graph:
+    <<: *dse-base
+    command: ["-g"]
+  spark:
+    <<: *dse-base
+    command: ["-k"]
+  search:
+    <<: *dse-base
+    command: ["-s"]
+  all: 
+    <<: *dse-base
+    command: ["-g", "-k", "-s"]

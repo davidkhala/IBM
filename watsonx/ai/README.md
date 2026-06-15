@@ -1,11 +1,14 @@
 # watsonx.ai
->
 > Build and deploy AI apps
 
-model providers
+portal: `https://${region}.dai.cloud.ibm.com/wx/home?context=wx`
 
+
+model providers
 - Meta
 - Mistral
+
+API_KEY: reuse IBM Cloud API Key
 
 # Projects：The Workspace of watsonx.ai
 

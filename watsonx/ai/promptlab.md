@@ -4,7 +4,6 @@ Asset type: when you Save your work
 
 - Prompt template: Save the current prompt only, without its history.
 - Prompt session: Save history and data from the current session.
-  - 
 - Standard notebook
 
 UI
