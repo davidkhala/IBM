@@ -6,13 +6,17 @@ x-dse-base: &dse-base
 services:
   core:
     <<: *dse-base
-  graph:
+    ports:
+    - "9042:9042" # CQL
+    healthcheck:
+      test: ["CMD", "sh", "-c", "cqlsh -e 'DESCRIBE KEYSPACES;' || exit 1"]
+  graph: # Based on Gremlin
     <<: *dse-base
     command: ["-g"]
   spark:
     <<: *dse-base
     command: ["-k"]
-  search:
+  search: # Based on Solr 
     <<: *dse-base
     command: ["-s"]
   all: 
