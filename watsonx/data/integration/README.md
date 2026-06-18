@@ -1,10 +1,8 @@
 # watsonx.data integration
->
 > Integrate any data, any style
 
-Trial
+portal url: `https://${region-code}.dai.cloud.ibm.com/df/home`
 
-- Region: Toronto (ca-tor) only
-- if you have watsonx.data intelligence Lite
-  - `Go to IBM Cloud and delete your existing Lite instances in other regions`
-  - `Your Lite services must be created in the same service region.`
+Trial provided in Toronto (ca-tor) only
+- [home](https://ca-tor.dai.cloud.ibm.com/df/home)
+

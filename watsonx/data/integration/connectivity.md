@@ -1,5 +1,7 @@
 # Connectivity
 
+my
+- [home](https://ca-tor.dai.cloud.ibm.com/data/connections/)
 
 ## Platform connections
 > Connections in the Platform assets catalog.
