@@ -2,6 +2,13 @@
 
 > Design a data architecture to deliver high-quality, trusted data products that are ready for AI.
 - aka. Data Fabric, dataplatform.cloud.ibm.com
+- portal url `https://${region-code}.dataplatform.cloud.ibm.com/`
+- Provides
+  - 统一 UI
+  - Shared services（identity、project、governance 基础）
+  - Operator / lifecycle / install framework
+- No SKU: CP4D is free. Services running on CP4D is chargeable
+
 
 
 # Design
