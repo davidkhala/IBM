@@ -10,4 +10,9 @@ Bob uses a model orchestration layer
 - model families: Claude, Mistral, Granite
 - > At this stage, we are unable to provide a quote for Bob in Hong Kong and China due to restrictions related to Claude, which is one of the models we use.
 
+## Bob-Shell
+windows install
 
+```powershell
+powershell -ep Bypass 'irm -Uri "https://bob.ibm.com/download/bobshell.ps1" | iex'
+```

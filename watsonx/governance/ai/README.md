@@ -19,3 +19,6 @@ measured by AI OpenScale metrics
 - Limited to 3 rows per use case
 - Limited to 3 use cases
 - Limited to 1 inventory
+
+## On-prem: w-and-w
+- https://www.ibm.com/docs/en/watsonx/w-and-w/2.4.x
