@@ -1,0 +1,27 @@
+[project]
+name = "davidkhala.ibm.cloud"
+version = "0.0.0"
+description = ""
+authors = [{ name = "David Liu", email = "david-khala@hotmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic"
+]
+
+[project.optional-dependencies]
+object = ["ibm-cos-sdk"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["davidkhala"]
+
+[tool.hatch.build.targets.wheel]
+include = ["davidkhala"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
