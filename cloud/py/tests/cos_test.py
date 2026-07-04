@@ -26,6 +26,12 @@ class UploadTest(BaseTestCase):
         file = Path(__file__).parent.parent / 'uv.lock'
         o.upload(file)
 
+    def test_write_stream(self):
+        import io
+        empty_stream = io.BytesIO(b"")
+        o = Object(self.client, self.bucket, 'empty.stream')
+        o.write_stream(empty_stream)
+
 
 from davidkhala.ibm.cloud.object.bucket import Bucket
 

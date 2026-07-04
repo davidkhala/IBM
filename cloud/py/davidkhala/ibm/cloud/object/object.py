@@ -1,5 +1,7 @@
 from os import PathLike
 
+from urllib3 import HTTPResponse
+
 from davidkhala.ibm.cloud.object import Client
 
 
@@ -14,3 +16,6 @@ class Object:
 
     def delete(self):
         self.client.client.delete_object(Bucket=self.bucket, Key=self.key)
+
+    def write_stream(self, stream: HTTPResponse):
+        self.client.client.put_object(Bucket=self.bucket, Key=self.key, Body=stream)
