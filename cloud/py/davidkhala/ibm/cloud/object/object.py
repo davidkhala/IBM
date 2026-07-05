@@ -23,21 +23,31 @@ class Object:
 
         parts = []
         part_number = 1
-        while True:
-            chunk = stream.read(part_size)
-            if not chunk:
-                break
-            part = self.client.client.upload_part(
-                Bucket=self.bucket,
-                Key=self.key,
-                PartNumber=part_number,
-                UploadId=upload_id,
-                Body=chunk
+        try:
+            while True:
+                chunk = stream.read(part_size)
+                if not chunk:
+                    break
+                part = self.client.client.upload_part(
+                    Bucket=self.bucket,
+                    Key=self.key,
+                    PartNumber=part_number,
+                    UploadId=upload_id,
+                    Body=chunk
+                )
+                parts.append({"ETag": part["ETag"], "PartNumber": part_number})
+                part_number += 1
+
+            if not parts:
+                self.client.client.put_object(Bucket=self.bucket, Key=self.key, Body=b"")
+            else:
+                self.client.client.complete_multipart_upload(
+                    Bucket=self.bucket, Key=self.key,
+                    UploadId=upload_id,
+                    MultipartUpload={"Parts": parts}
+                )
+        except Exception:
+            self.client.client.abort_multipart_upload(
+                Bucket=self.bucket, Key=self.key, UploadId=upload_id
             )
-            parts.append({"ETag": part["ETag"], "PartNumber": part_number})
-            part_number += 1
-        self.client.client.complete_multipart_upload(
-            Bucket=self.bucket, Key=self.key,
-            UploadId=upload_id,
-            MultipartUpload={"Parts": parts}
-        )
+            raise

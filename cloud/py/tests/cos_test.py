@@ -28,9 +28,10 @@ class UploadTest(BaseTestCase):
 
     def test_write_stream(self):
         import io
-        empty_stream = io.BytesIO(b"1")
+
         o = Object(self.client, self.bucket, 'empty.stream')
-        o.write_stream(empty_stream)
+        o.write_stream(io.BytesIO(b""))
+        o.write_stream(io.BytesIO(b"1"))
 
 
 from davidkhala.ibm.cloud.object.bucket import Bucket
