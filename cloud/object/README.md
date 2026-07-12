@@ -3,7 +3,14 @@
 - Ref to [Empty a bucket](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-deleting-multiple-objects-patterns)
 
 
+
+## Limit
 IBM COS 没法做流输入
 - 不接受没有 Content-Length 的单次 PUT
 - 在发送 PUT 请求前，会强制调用 seek(0)
-- Solution: 只能用multipart_upload
+- workaround: 只能用multipart_upload
+
+
+
+> The size of each file (object) cannot be larger than 200MB for standard uploads.
+- web ui上传限制
