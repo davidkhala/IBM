@@ -16,37 +16,41 @@ class BaseTestCase(unittest.TestCase):
 from davidkhala.ibm.cloud.object.object import Object
 
 
-class UploadTest(BaseTestCase):
+class ObjectTest(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.bucket = 'f3eb0b6b-96e4-482f-9cc7-a033fb6a0f77'
 
-    def test_upload(self):
+    def test_upload_download(self):
         o = Object(self.client, self.bucket, 'temp/uv.lock')
         file = Path(__file__).parent.parent / 'uv.lock'
         o.upload(file)
-
-    def test_write_stream(self):
-        import io
-
-        o = Object(self.client, self.bucket, 'empty.stream')
-        o.write_stream(io.BytesIO(b""))
-        o.write_stream(io.BytesIO(b"1"))
-
-    def test_download(self):
+        # download
         import tempfile
         o = Object(self.client, self.bucket, 'temp/uv.lock')
         with tempfile.NamedTemporaryFile() as f:
             o.download(f.name)
             self.assertGreater(Path(f.name).stat().st_size, 0)
 
-    def test_read_stream(self):
-        o = Object(self.client, self.bucket, 'temp/uv.lock')
+    def test_stream(self):
+        import io
+
+        key = 'empty.stream'
+        o = Object(self.client, self.bucket, key)
+        o.write_stream(io.BytesIO(b""))
+        o.write_stream(io.BytesIO(b"1"))
+        # read stream
+        o = Object(self.client, self.bucket, key)
         received = 0
         for chunk in o.read_stream():
             self.assertIsInstance(chunk, bytes)
             received += len(chunk)
         self.assertGreater(received, 0)
+
+    def test_delete(self):
+        o = Object(self.client, self.bucket, 'temp/uv.lock')
+        if o.delete_if_exists():
+            self.assertFalse(o.delete_if_exists())
 
 
 from davidkhala.ibm.cloud.object.bucket import Bucket

@@ -1,6 +1,7 @@
 from os import PathLike
 from typing import Iterator, Union
 
+from ibm_botocore.exceptions import ClientError
 from ibm_botocore.response import StreamingBody
 from urllib3 import HTTPResponse
 
@@ -22,6 +23,16 @@ class Object:
     def read_stream(self, chunk_size=StreamingBody._DEFAULT_CHUNK_SIZE) -> Iterator[bytes]:
         response = self.client.client.get_object(Bucket=self.bucket, Key=self.key)
         return response["Body"].iter_chunks(chunk_size=chunk_size)
+
+    def delete_if_exists(self) -> bool:
+        try:
+            self.client.client.head_object(Bucket=self.bucket, Key=self.key)
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return False
+            raise
+        self.delete()
+        return True
 
     def delete(self):
         self.client.client.delete_object(Bucket=self.bucket, Key=self.key)
