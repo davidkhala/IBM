@@ -1,6 +1,6 @@
 [project]
 name = "davidkhala.ibm.cloud"
-version = "0.0.3"
+version = "0.0.4"
 description = ""
 authors = [{ name = "David Liu", email = "david-khala@hotmail.com" }]
 requires-python = ">=3.10"

@@ -1,5 +1,7 @@
 from os import PathLike
+from typing import Iterator, Union
 
+from ibm_botocore.response import StreamingBody
 from urllib3 import HTTPResponse
 
 from davidkhala.ibm.cloud.object import Client
@@ -13,6 +15,13 @@ class Object:
 
     def upload(self, file: PathLike):
         self.client.client.upload_file(file, self.bucket, self.key)
+
+    def download(self, file: Union[str, PathLike]):
+        self.client.client.download_file(self.bucket, self.key, str(file))
+
+    def read_stream(self, chunk_size=StreamingBody._DEFAULT_CHUNK_SIZE) -> Iterator[bytes]:
+        response = self.client.client.get_object(Bucket=self.bucket, Key=self.key)
+        return response["Body"].iter_chunks(chunk_size=chunk_size)
 
     def delete(self):
         self.client.client.delete_object(Bucket=self.bucket, Key=self.key)

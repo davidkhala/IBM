@@ -33,6 +33,21 @@ class UploadTest(BaseTestCase):
         o.write_stream(io.BytesIO(b""))
         o.write_stream(io.BytesIO(b"1"))
 
+    def test_download(self):
+        import tempfile
+        o = Object(self.client, self.bucket, 'temp/uv.lock')
+        with tempfile.NamedTemporaryFile() as f:
+            o.download(f.name)
+            self.assertGreater(Path(f.name).stat().st_size, 0)
+
+    def test_read_stream(self):
+        o = Object(self.client, self.bucket, 'temp/uv.lock')
+        received = 0
+        for chunk in o.read_stream():
+            self.assertIsInstance(chunk, bytes)
+            received += len(chunk)
+        self.assertGreater(received, 0)
+
 
 from davidkhala.ibm.cloud.object.bucket import Bucket
 
