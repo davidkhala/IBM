@@ -11,4 +11,6 @@ does not share home with wx.data integration
 - 这个是给其他CP4D用的
 - DataStage 使用的是 `DataStage组件` > `数据定义`
 
-
+## known issues
+在run之前的弹窗[Define run settings]中，修改的表单参数未必会生效，而会采用默认值
+- 你需要查看Job run 的Parameters来确定
