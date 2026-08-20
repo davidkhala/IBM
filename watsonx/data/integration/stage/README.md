@@ -15,3 +15,7 @@ does not share home with wx.data integration
 ## known issues
 在run之前的弹窗[Define run settings]中，修改的表单参数未必会生效，而会采用默认值
 - 你需要查看Job run 的Parameters来确定
+
+`ds-px-runtime` will not handle Design time data connection initiative, it include
+- Test Connection
+- Table Details, Table Preview
