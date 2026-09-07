@@ -19,5 +19,6 @@ WatsonX Orchestrate platform.
 - [source](https://github.com/IBM/ibm-watsonx-orchestrate-adk)
 - [pypi](https://pypi.org/project/ibm-watsonx-orchestrate)
   - aka. IBM watsonx.orchestrate SDK
-
+- command-line binary `orchestrate`
+  - `uv tool install ibm-watsonx-orchestrate`
 
