@@ -1,5 +1,5 @@
 [project]
-name = "davidkhala.ibm.watson"
+name = "davidkhala.ibm.watsonx"
 version = "0.0.0"
 description = "Connect to revamped IBM"
 readme = "README.md"

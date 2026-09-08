@@ -1,4 +1,4 @@
-# watsonx.assistant
+# Watson Assistant
 
 The non-AI chatbot
 

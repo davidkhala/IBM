@@ -19,6 +19,12 @@ WatsonX Orchestrate platform.
 - [source](https://github.com/IBM/ibm-watsonx-orchestrate-adk)
 - [pypi](https://pypi.org/project/ibm-watsonx-orchestrate)
   - aka. IBM watsonx.orchestrate SDK
-- command-line binary `orchestrate`
-  - `uv tool install ibm-watsonx-orchestrate`
+## command-line binary `orchestrate`
+Install by `uv tool install ibm-watsonx-orchestrate`
+
+config
+- `~/.config/orchestrate/config.yaml`: 环境列表和active_environment
+- `~/.cache/orchestrate/credentials.yaml`: credentials for current active_environment
+  - `apikey`
+  - `wxo_mcsp_token`: cached IAM token, 1 hour expiry, auto refresh
 
