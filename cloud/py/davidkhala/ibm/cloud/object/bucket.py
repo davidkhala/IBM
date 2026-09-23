@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -25,6 +26,16 @@ class Bucket:
         files = self._.list_objects(Bucket=self.bucket)
 
         return [file["Key"] for file in files.get('Contents', [])]
+
+    def delete_matching(self, pattern: str | re.Pattern) -> list[str]:
+        """Delete all objects whose key matches *pattern*. Returns the list of deleted keys."""
+        compiled = re.compile(pattern) if isinstance(pattern, str) else pattern
+        deleted = []
+        for key in self.list_objects():
+            if compiled.search(key):
+                Object(self._, self.bucket, key).delete()
+                deleted.append(key)
+        return deleted
 
     def nuke(self):
         if not self.exists(): return
