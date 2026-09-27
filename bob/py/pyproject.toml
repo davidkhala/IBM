@@ -1,0 +1,18 @@
+[project]
+name = "davidkhala.ibm.bob"
+version = "0.0.0"
+authors = [{ name = "David Liu" }]
+requires-python = ">=3.12"
+dependencies = [
+    "davidkhala.databases==0.1.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-s" # not to capture stdout by pytest
+
