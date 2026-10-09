@@ -22,6 +22,7 @@ or on windows
 [System.Environment]::SetEnvironmentVariable('BOB_API_KEY', 'your-api-key-here', 'User')
 ```
 
+Then start TUI by `bob --accept-license`
 
 
 ### outbound request domain
