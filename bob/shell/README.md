@@ -14,9 +14,15 @@ powershell -ep Bypass 'irm -Uri "https://bob.ibm.com/download/bobshell.ps1" | ie
 
 ### Use API key
 
-`export BOBSHELL_API_KEY="your-api-key-here"` or `$env:BOBSHELL_API_KEY="your-api-key-here"` on windows
+```
+echo 'export BOB_API_KEY="your-api-key-here"' >> ~/.bashrc
+```
+or on windows 
+```
+[System.Environment]::SetEnvironmentVariable('BOB_API_KEY', 'your-api-key-here', 'User')
+```
 
-Then run `bob --auth-method api-key -p "Hi"`
+
 
 ### outbound request domain
 
