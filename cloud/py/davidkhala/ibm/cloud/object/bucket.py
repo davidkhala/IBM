@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from davidkhala.ibm.cloud.object import Client
+from davidkhala.ibm.cloud.object import WithBucket
 from davidkhala.ibm.cloud.object.object import Object
 
 
@@ -12,10 +12,7 @@ class BucketModel(BaseModel):
     CreationDate: datetime
 
 
-class Bucket:
-    def __init__(self, client: Client, bucket: str):
-        self._ = client.client
-        self.bucket = bucket
+class Bucket(WithBucket):
 
     @property
     def buckets(self) -> list[BucketModel]:

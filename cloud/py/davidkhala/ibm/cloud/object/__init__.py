@@ -15,3 +15,12 @@ class Client:
             config=Config(signature_version="oauth"),
             endpoint_url=f"https://s3.{region}.cloud-object-storage.appdomain.cloud"
         )
+
+
+class WithBucket:
+    def __init__(self, client: Client, bucket: str):
+        self.client = client
+        self.bucket = bucket
+    @property
+    def _(self):
+        return self.client.client
