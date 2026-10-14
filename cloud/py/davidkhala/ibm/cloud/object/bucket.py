@@ -30,7 +30,7 @@ class Bucket(WithBucket):
         deleted = []
         for key in self.list_objects():
             if compiled.search(key):
-                Object(self._, self.bucket, key).delete()
+                Object(self.client, self.bucket, key).delete()
                 deleted.append(key)
         return deleted
 
