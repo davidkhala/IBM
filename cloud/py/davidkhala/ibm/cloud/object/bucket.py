@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from collections.abc import Iterator
 
 from pydantic import BaseModel
 
@@ -17,12 +18,17 @@ class Bucket(WithBucket):
     @property
     def buckets(self) -> list[BucketModel]:
         # there is no way to inspect each bucket region?
-        return [BucketModel.model_validate(_) for _ in self._.list_buckets()['Buckets']]
+        return [BucketModel.model_validate(_) for _ in self._.list_buckets()["Buckets"]]
 
-    def list_objects(self):
-        files = self._.list_objects(Bucket=self.bucket)
-
-        return [file["Key"] for file in files.get('Contents', [])]
+    def list_objects(self) -> Iterator[str]:
+        kwargs = {"Bucket": self.bucket}
+        while True:
+            response = self._.list_objects_v2(**kwargs)
+            for obj in response.get("Contents", []):
+                yield obj["Key"]
+            if not response.get("IsTruncated"):
+                break
+            kwargs["ContinuationToken"] = response["NextContinuationToken"]
 
     def delete_matching(self, pattern: str | re.Pattern) -> list[str]:
         """Delete all objects whose key matches *pattern*. Returns the list of deleted keys."""
@@ -30,14 +36,15 @@ class Bucket(WithBucket):
         deleted = []
         for key in self.list_objects():
             if compiled.search(key):
-                Object(self._, self.bucket, key).delete()
+                Object(self.client, self.bucket, key).delete()
                 deleted.append(key)
         return deleted
 
     def nuke(self):
-        if not self.exists(): return
+        if not self.exists():
+            return
         for item_name in self.list_objects():
-            o = Object(self._, self.bucket, item_name)
+            o = Object(self.client, self.bucket, item_name)
             o.delete()
         self._.delete_bucket(Bucket=self.bucket)
 

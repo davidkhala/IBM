@@ -1,6 +1,6 @@
 [project]
 name = "davidkhala.ibm.cloud"
-version = "0.0.7"
+version = "0.0.9"
 description = ""
 authors = [{ name = "David Liu", email = "david-khala@hotmail.com" }]
 requires-python = ">=3.10"
@@ -15,6 +15,9 @@ object = ["ibm-cos-sdk"]
 dev = [
     "pytest",
 ]
+[tool.pytest.ini_options]
+addopts = "-s -v"
+
 
 [tool.hatch.build.targets.sdist]
 include = ["davidkhala"]
