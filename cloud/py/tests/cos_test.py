@@ -65,7 +65,10 @@ class BucketTest(BaseTestCase):
         buckets = self._.buckets
         for bucket in buckets:
             print(bucket.Name)
-
+    def test_list(self):
+        print()
+        for o in self._.list_objects():
+            print(o)
     def test_nuke(self):
         bucket = "masterdatamanagement-donotdelete-pr-wllwyejsw9vhrp"
         b = Bucket(self.client, bucket)
