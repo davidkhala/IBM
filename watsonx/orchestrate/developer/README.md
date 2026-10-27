@@ -21,11 +21,23 @@ port：4321
 
 port: 3000
 
+It also support provision via [container compose](./container/)
+
 ## Provision
 
 ```
 orchestrate server start -e .env --accept-terms-and-conditions --service-password An75Lovh^Ky^oP55mN
 ```
+- dependency list
+  - redis
+  - minio
+  - milvus
+  - etcd
+  - clickhouse
+  - langfuse
+  - langflow
+  - pg (wxo-server-db)
+
 
 - 安装过程中可能会因网络问题go build minio的途中失败。
   - 请将dnsTunneling=true和autoProxy=true，加入`~\.wslconfig`
