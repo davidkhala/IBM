@@ -53,3 +53,19 @@ Trace
 - [INFO] - You can run `orchestrate env activate local` to set your environment or `orchestrate chat start` to start the UI service and begin chatting
   - Indicator of process complete
 - `orchestrate chat start` will start on http://localhost:3000/chat-lite
+  - The chat model from OpenAI gpt‑4‑turbo
+
+## restart
+Stop by `orchestrate server stop`
+- stop order: docker-compose,  WSL distro
+
+
+Resume by `orchestrate server start -e .env`
+
+## Uninstall
+`orchestrate server purge`: Delete the underlying VM and all its data 
+
+
+## known issue
+
+http://localhost:3000/build/agents/analytics?timeRange=last-1-hour shows 404
