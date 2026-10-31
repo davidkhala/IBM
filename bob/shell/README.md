@@ -25,6 +25,10 @@ or on windows
 Then start TUI by `bob --accept-license`
 
 
+### Ralph loop
+
+see [ralph](./ralph/)
+
 ### outbound request domain
 
 from Github Codespace and oci singapore
