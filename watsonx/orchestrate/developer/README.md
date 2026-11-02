@@ -11,10 +11,13 @@ include *watsonx Orchestrate server* and *watsonx Orchestrate UI*
 ## watsonx Orchestrate server
 
 port：4321
+- get actual port usage by `orchestrate env list`
 
-- optional service: Langfuse
-- OpenAPI Docs
-  - exposed in `<host>/docs`
+optional service: Langfuse
+
+API
+- API Base URL: `http://localhost:4321/api/v1`
+- OpenAPI Docs: `http://localhost:4321/docs`
   - published in <https://developer.watson-orchestrate.ibm.com/developer_edition/api_authentication>
 
 ## watsonx Orchestrate UI
@@ -40,7 +43,7 @@ orchestrate server start -e .env --accept-terms-and-conditions --service-passwor
 
 
 - 安装过程中可能会因网络问题go build minio的途中失败。
-  - 请将dnsTunneling=true和autoProxy=true，加入`~\.wslconfig`
+  - for windows: 请将`dnsTunneling=true`和`autoProxy=true`，加入`~\.wslconfig`
 
 Trace
 
@@ -53,19 +56,7 @@ Trace
 - [INFO] - You can run `orchestrate env activate local` to set your environment or `orchestrate chat start` to start the UI service and begin chatting
   - Indicator of process complete
 - `orchestrate chat start` will start on http://localhost:3000/chat-lite
-  - The chat model from OpenAI gpt‑4‑turbo
+  - The command will hang if `orchestrate server start` does not run yet even if `orchestrate env` is ready
 
-## restart
-Stop by `orchestrate server stop`
-- stop order: docker-compose,  WSL distro
-
-
-Resume by `orchestrate server start -e .env`
-
-## Uninstall
-`orchestrate server purge`: Delete the underlying VM and all its data 
-
-
-## known issue
-
-http://localhost:3000/build/agents/analytics?timeRange=last-1-hour shows 404
+## Resume
+`orchestrate server start -e .env`
