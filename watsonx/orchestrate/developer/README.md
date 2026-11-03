@@ -42,8 +42,6 @@ orchestrate server start -e .env --accept-terms-and-conditions --service-passwor
   - pg (wxo-server-db)
 
 
-- 安装过程中可能会因网络问题go build minio的途中失败。
-  - for windows: 请将`dnsTunneling=true`和`autoProxy=true`，加入`~\.wslconfig`
 
 Trace
 
