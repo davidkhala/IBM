@@ -10,7 +10,7 @@ class Teams:
                teams_tenant_id: str | None = None,
                name: str | None = None,
                **kwargs
-               ) -> dict:
+               ) -> str:
         """
         :param client_id: Application (client) ID of the Azure App registration, sent as `app_id`
         :param client_secret: client secret value of the Azure App registration, sent as `app_password`
@@ -24,13 +24,18 @@ class Teams:
             "enable_feedback": True,
             **kwargs
         }
-        return self.api.request(self.base_url, "POST", json={k: v for k, v in body.items() if v is not None})
+        r = self.api.request(self.base_url, "POST", json={k: v for k, v in body.items() if v is not None})
+        return r['id']
 
-    def list(self) -> list | dict:
-        return self.api.request(self.base_url, "GET")
+    def list(self) -> list:
+        r = self.api.request(self.base_url, "GET")
+        return r['channels']
 
     def get(self, channel_id: str) -> dict:
-        return self.api.request(f"{self.base_url}/{channel_id}", "GET")
+        r = self.api.request(f"{self.base_url}/{channel_id}", "GET")
+        assert r.pop('channel')== 'teams' # always 'teams'
+        assert r.pop('app_password') is None  # always None
+        return r
 
     def update(self, channel_id: str, *,
                client_id: str | None = None,

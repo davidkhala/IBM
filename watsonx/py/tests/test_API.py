@@ -9,7 +9,6 @@ class GetTest(unittest.TestCase):
         print(c.server)
         self.assertEqual("0.3.0", c.client)
 
-
 class LoginTest(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -22,6 +21,7 @@ class LoginTest(unittest.TestCase):
         c = Agents(self.api)
         agents = c.list()
         self.assertGreater(len(agents), 0)
+        print(agents[0])
 
 
 if __name__ == "__main__":
