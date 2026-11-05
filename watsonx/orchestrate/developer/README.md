@@ -8,6 +8,10 @@ Hardware requirements
 
 include *watsonx Orchestrate server* and *watsonx Orchestrate UI*
 
+Prebuilt agent
+- `DocProcessing`
+- `AskOrchestrate`
+
 ## watsonx Orchestrate server
 
 port：4321

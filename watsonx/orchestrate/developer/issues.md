@@ -2,8 +2,8 @@
 
 Setup Microsoft Teams integration
 
-- Developer Edition 是跑在localhost的。而 Teams 这类渠道的 channel 会生成一个 event URL 接收来自 Teams（Azure Bot Service）的消息回调. Microsoft 的 Bot Framework 需要一个公网可访问的 HTTPS endpoint，本地的 localhost 无法满足
-
+- 本地 Developer Edition 单机版 只包含了 Agent 核心执行引擎，并未内置外部第三方 Channel 的 Webhook 接收器/网关服务。
+- 在Deploy tab 点击[Add channel] 会没有反应
 
 ```
 Exception in thread Thread-15 (_readerthread):
@@ -13,6 +13,8 @@ UnicodeDecodeError: 'gbk' codec can't decode byte 0xa4 in position 2: illegal mu
 - root cause: 在 Windows 系统下，Python 默认使用 GBK 编码去读取某些以 UTF-8（或其他非 GBK 编码）格式保存的文件或输出流时引起的。
 - 无法修复
 
+在windows系统下，API latency很高
+- 在linux系统下就没有这个问题了
 
 安装过程中可能会因网络问题go build minio的途中失败。
 - for windows: 请将`dnsTunneling=true`和`autoProxy=true`，加入`~\.wslconfig`
@@ -30,3 +32,8 @@ API 登录凭证与 `--service-username` / `--service-password` 无关
 - 租户：CLI 取 `name == "wxo-dev"` 的租户，不存在则创建
 - 登录流程（已验证）：`POST /api/v1/auth/token` → `GET /api/v1/tenants` → `POST /api/v1/auth/token?tenant_id=<id>`，之后以租户级 token 作为 Bearer
 - 实现见 [`API.login`](../../py/davidkhala/ibm/watsonx/orchestrate/developer/__init__.py)
+
+
+# Troubleshoot
+See `ibm_watsonx_orchestrate_core.utils.exceptions.VMLifecycleException: command '['wsl', '-d', 'ibm-watsonx-orchestrate', '-u', 'orchestrate', '--', 'docker', 'login', '-u', 'wxouser-bd8eb97e-fa50-4e9a-9f14-509a7e10b1f7', '--password-stdin', 'registry.jp-tok.watson-orchestrate.cloud.ibm.com']' returned non-zero exit status 1.` when orchestrate start
+- Try clean up by `orchestrate server stop` first

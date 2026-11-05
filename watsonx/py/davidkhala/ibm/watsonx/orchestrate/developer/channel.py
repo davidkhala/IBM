@@ -7,14 +7,14 @@ class Teams:
         self.base_url = f"{api.base_url}/orchestrate/agents/{agent_id}/environments/{environment_id}/channels/teams"
 
     def create(self, client_id: str, client_secret: str, *,
-               teams_tenant_id: str | None = None,
+               teams_tenant_id: str,
                name: str | None = None,
                **kwargs
                ) -> str:
         """
+        :param teams_tenant_id: tenant id of Microsoft Entra ID
         :param client_id: Application (client) ID of the Azure App registration, sent as `app_id`
         :param client_secret: client secret value of the Azure App registration, sent as `app_password`
-        TODO: check whether teams_tenant_id can be ignored.
         """
         body = {
             "app_id": client_id,
