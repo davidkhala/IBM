@@ -1,0 +1,23 @@
+[project]
+name = "wxo-azure-bot-bridge"
+version = "0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
+    "pyjwt",
+    "python-dotenv",
+    "microsoft-agents-hosting-fastapi",
+    "microsoft-agents-authentication-msal",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+addopts = "-s -v"
+pythonpath = ["."]
