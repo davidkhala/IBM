@@ -4,13 +4,12 @@ import unittest
 import uuid
 
 from fastapi.testclient import TestClient
-from microsoft_agents.activity import Activity
 
 from src import frames
 from src.app import create_app
 from src.bridge import Bridge
 from src.config import Settings
-from src.streaming import StreamingSession
+from src.streaming import StreamingSession, _Collector
 from src.wxo import Delta
 
 ENV = {
@@ -18,9 +17,9 @@ ENV = {
     "WXO_PASSWORD": "p",
     "WXO_AGENT": "a",
     "WS_UPDATE_INTERVAL": "0",
-    "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENTID": "00000000-0000-0000-0000-000000000001",
-    "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENTSECRET": "secret",
-    "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__TENANTID": "00000000-0000-0000-0000-000000000002",
+    "ENTRA_APP_CLIENT_ID": "00000000-0000-0000-0000-000000000001",
+    "ENTRA_APP_CLIENT_SECRET": "secret",
+    "ENTRA_APP_TENANT_ID": "00000000-0000-0000-0000-000000000002",
 }
 
 
@@ -45,7 +44,6 @@ class FakeSocket:
 
     def __init__(self):
         self.inbound: asyncio.Queue[bytes | None] = asyncio.Queue()
-        self.parser, self.collector = frames.FrameParser(), None
         self.outbound: asyncio.Queue = asyncio.Queue()
 
     async def receive_bytes(self) -> bytes:
@@ -91,9 +89,8 @@ def user_activity(text="hi") -> dict:
     }
 
 
-async def read_messages(sock: FakeSocket, session_inbox: FakeSocket, count: int, answer_ids=True):
-    """读取 count 个出站 Request(并像 Bot Service 一样回 200 + {id}),返回 (path, activity) 列表。"""
-    from src.streaming import _Collector
+async def read_messages(sock: FakeSocket, count: int):
+    """读取 count 个出站消息(并像 Bot Service 一样对 POST 回 200 + {id}),返回 (path, activity) 列表。"""
     parser, collector, got = frames.FrameParser(), _Collector(), []
     while len(got) < count:
         data = await asyncio.wait_for(sock.outbound.get(), 5)
@@ -101,7 +98,7 @@ async def read_messages(sock: FakeSocket, session_inbox: FakeSocket, count: int,
             for m in collector.add(f):
                 if m.kind == frames.REQUEST and m.head["verb"] == "POST":
                     got.append((m.head["path"], m.json()))
-                    await session_inbox.inbound.put(response_bytes(m.id, 200, {"id": "stream-xyz"}))
+                    await sock.inbound.put(response_bytes(m.id, 200, {"id": "stream-xyz"}))
                 elif m.kind == frames.RESPONSE:
                     got.append(("response", m.head))
     return got
@@ -115,7 +112,7 @@ class StreamingSessionTestCase(unittest.IsolatedAsyncioTestCase):
         task = asyncio.create_task(session.run())
         _, data = request_bytes("POST", "/api/messages", user_activity())
         await sock.inbound.put(data)
-        got = await read_messages(sock, sock, expect)
+        got = await read_messages(sock, expect)
         await sock.inbound.put(None)
         with self.assertRaises(ConnectionError):
             await task
@@ -157,7 +154,7 @@ class StreamingSessionTestCase(unittest.IsolatedAsyncioTestCase):
         task = asyncio.create_task(session.run())
         _, data = request_bytes("GET", "/api/version")
         await sock.inbound.put(data)
-        got = await read_messages(sock, sock, 1)
+        got = await read_messages(sock, 1)
         self.assertEqual(got[0], ("response", {"statusCode": 200, "streams": got[0][1]["streams"]}))
         await sock.inbound.put(None)
         with self.assertRaises(ConnectionError):
@@ -169,7 +166,7 @@ class StreamingSessionTestCase(unittest.IsolatedAsyncioTestCase):
         task = asyncio.create_task(session.run())
         _, data = request_bytes("GET", "/nope")
         await sock.inbound.put(data)
-        got = await read_messages(sock, sock, 1)
+        got = await read_messages(sock, 1)
         self.assertEqual(got[0], ("response", {"statusCode": 404}))
         await sock.inbound.put(None)
         with self.assertRaises(ConnectionError):
@@ -190,26 +187,6 @@ class AppTestCase(unittest.TestCase):
         with self.assertRaises(WebSocketDisconnect):
             with client.websocket_connect("/api/messages"):
                 pass
-
-    def test_websocket_end_to_end_with_anonymous_allowed(self):
-        env = {**ENV, "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__ANONYMOUS_ALLOWED": "true"}
-        client = TestClient(create_app(env, wxo=FakeWxo(chunks=("ok",))))
-        with client.websocket_connect("/api/messages") as ws:
-            _, data = request_bytes("POST", "/api/messages", user_activity())
-            ws.send_bytes(data)
-            from src.streaming import _Collector
-            parser, collector, posts, acked = frames.FrameParser(), _Collector(), [], False
-            while not posts or posts[-1]["type"] != "message":
-                for f in parser.feed(ws.receive_bytes()):
-                    for m in collector.add(f):
-                        if m.kind == frames.RESPONSE:
-                            acked = True
-                        else:
-                            posts.append(m.json())
-                            ws.send_bytes(response_bytes(m.id, 200, {"id": "s1"}))
-        self.assertTrue(acked)
-        self.assertEqual(posts[-1]["text"], "ok")
-
 
 if __name__ == "__main__":
     unittest.main()

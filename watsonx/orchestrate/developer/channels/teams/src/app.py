@@ -12,7 +12,7 @@ from microsoft_agents.hosting.fastapi import CloudAdapter, jwt_authorization_dec
 
 from .agent import build_agent
 from .bridge import Bridge
-from .config import Settings
+from .config import Settings, to_sdk_env
 from .streaming import StreamingSession
 from .wxo import WxoClient
 
@@ -35,7 +35,7 @@ class _WebSocketAdapter:
 
 def create_app(env: Mapping[str, str], wxo: WxoClient | None = None) -> FastAPI:
     settings = Settings.from_env(env)
-    sdk_config = load_configuration_from_env(env)
+    sdk_config = load_configuration_from_env(to_sdk_env(env))
     connection_manager = MsalConnectionManager(**sdk_config)
     wxo = wxo or WxoClient(settings)
     bridge = Bridge(wxo)

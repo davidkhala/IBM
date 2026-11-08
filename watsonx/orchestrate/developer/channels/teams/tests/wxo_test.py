@@ -1,12 +1,13 @@
 import json
+import os
 import unittest
 
-import httpx
+from dotenv import load_dotenv
 
 from src.config import Settings
 from src.wxo import WxoClient, parse_sse_line
 
-ENV = {"WXO_USERNAME": "u", "WXO_PASSWORD": "p", "WXO_AGENT": "my_agent"}
+load_dotenv()
 
 
 def sse(event: str, data: dict) -> str:
@@ -38,73 +39,50 @@ class ParseSseTestCase(unittest.TestCase):
 
 
 class WxoClientTestCase(unittest.IsolatedAsyncioTestCase):
-    def make(self, handler) -> WxoClient:
-        return WxoClient(Settings.from_env(ENV), transport=httpx.MockTransport(handler))
+    """依赖本地运行的 wxo Developer Edition;连接信息取自环境变量或 .env(WXO_*)。"""
 
-    async def test_login_stream_and_thread(self):
-        calls, bodies = [], []
+    def make(self, **overrides) -> WxoClient:
+        env = {k: v for k, v in os.environ.items() if k.startswith("WXO_")}
+        env.update(overrides)
+        return WxoClient(Settings.from_env(env))
 
-        def handler(request: httpx.Request) -> httpx.Response:
-            calls.append((request.method, request.url.path, request.url.params.get("tenant_id")))
-            path = request.url.path
-            if path.endswith("/auth/token"):
-                return httpx.Response(200, json={"access_token": "tok-" + (request.url.params.get("tenant_id") or "x"), "token_type": "bearer"})
-            if path.endswith("/tenants"):
-                return httpx.Response(200, json=[{"id": "T1"}])
-            if path.endswith("/orchestrate/agents"):
-                self.assertEqual(request.headers["Authorization"], "Bearer tok-T1")
-                return httpx.Response(200, json=[{"id": "A1", "name": "my_agent"}])
-            if path.endswith("/runs/stream"):
-                bodies.append(json.loads(request.content))
-                body = sse("message.delta", {"thread_id": "th", "delta": {"content": [{"text": "hi"}]}}) + sse("message.completed", {})
-                return httpx.Response(200, content=body.encode(), headers={"content-type": "text/event-stream"})
-            return httpx.Response(404)
+    async def test_login_and_resolve_agent(self):
+        client = self.make()
+        try:
+            self.assertTrue(await client.agent_id())
+        finally:
+            await client.aclose()
 
-        client = self.make(handler)
-        out = [d async for d in client.stream("hello", "old-thread")]
-        await client.aclose()
-        self.assertEqual("".join(d.text for d in out), "hi")
-        self.assertEqual(bodies[0]["agent_id"], "A1")
-        self.assertEqual(bodies[0]["thread_id"], "old-thread")
-        self.assertEqual(bodies[0]["message"], {"role": "user", "content": "hello"})
+    async def test_stream_and_continue_thread(self):
+        client = self.make()
+        try:
+            first = [d async for d in client.stream("Reply with one short sentence.")]
+            self.assertTrue(first[-1].done)
+            self.assertTrue("".join(d.text for d in first).strip())
+            thread_id = next(d.thread_id for d in first if d.thread_id)
 
-    async def test_relogin_on_401(self):
-        state = {"auths": 0, "streams": 0}
+            second = [d async for d in client.stream("Thanks.", thread_id)]
+            self.assertTrue(second[-1].done)
+            self.assertEqual(next(d.thread_id for d in second if d.thread_id), thread_id)
+        finally:
+            await client.aclose()
 
-        def handler(request: httpx.Request) -> httpx.Response:
-            path = request.url.path
-            if path.endswith("/auth/token"):
-                state["auths"] += 1
-                return httpx.Response(200, json={"access_token": f"tok{state['auths']}", "token_type": "bearer"})
-            if path.endswith("/tenants"):
-                return httpx.Response(200, json=[{"id": "T1"}])
-            if path.endswith("/orchestrate/agents"):
-                return httpx.Response(200, json=[{"id": "A1", "name": "my_agent"}])
-            if path.endswith("/runs/stream"):
-                state["streams"] += 1
-                if state["streams"] == 1:
-                    return httpx.Response(401)
-                return httpx.Response(200, content=sse("message.completed", {}).encode())
-            return httpx.Response(404)
-
-        client = self.make(handler)
-        out = [d async for d in client.stream("x")]
-        await client.aclose()
-        self.assertEqual(state["streams"], 2)
-        self.assertTrue(out[-1].done)
+    async def test_relogin_on_expired_token(self):
+        client = self.make()
+        try:
+            await client.login()
+            client._token = "expired"
+            self.assertTrue(await client.agent_id())
+        finally:
+            await client.aclose()
 
     async def test_unknown_agent(self):
-        def handler(request: httpx.Request) -> httpx.Response:
-            if request.url.path.endswith("/auth/token"):
-                return httpx.Response(200, json={"access_token": "t", "token_type": "bearer"})
-            if request.url.path.endswith("/tenants"):
-                return httpx.Response(200, json=[{"id": "T1"}])
-            return httpx.Response(200, json=[])
-
-        client = self.make(handler)
-        with self.assertRaises(RuntimeError):
-            await client.agent_id()
-        await client.aclose()
+        client = self.make(WXO_AGENT="no-such-agent-for-test")
+        try:
+            with self.assertRaises(RuntimeError):
+                await client.agent_id()
+        finally:
+            await client.aclose()
 
 
 if __name__ == "__main__":

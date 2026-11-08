@@ -11,4 +11,5 @@ COPY . .
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-3978}
+# 端口由运行时的 PORT 环境变量决定
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT}
