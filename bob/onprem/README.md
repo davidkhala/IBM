@@ -19,8 +19,7 @@
 
 - 两个命名空间:Operator namespace(默认 `ibm-bob-operators`)与 Instance namespace(默认 `ibm-bob`),均由 `bobctl` 自动创建,**不要手工创建**。
 - 两步部署:先由 cluster-admin 应用集群级资源(CRD、ClusterRole 等),再运行 `bobctl install`(仅在两个命名空间内操作)。
-- 支持的 OCP 版本:4.20 / 4.21 / 4.22。
-- Bob Core 最小规模:约 10.8 vCPU / 10.8 GiB 内存 / 约 24 GiB PV(请求值,另需约 25% 调度余量)。
+
 - 推理模型(LLM)不包含在安装内,需要自行准备。
 
 ## 工作站环境(Windows)

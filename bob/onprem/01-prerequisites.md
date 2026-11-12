@@ -1,4 +1,7 @@
 # 01 — 前置条件
+- 支持的 OCP 版本:4.20 / 4.21 / 4.22。
+- Bob Core 请求约 10.8 vCPU / 10.8 GiB / ~24 GiB PV;
+  - 参考拓扑为 3 个 worker(各 8 vCPU / 16 GiB / 200 GiB)。
 
 ## 1.1 IBM Entitled Registry 登录
 
@@ -36,46 +39,27 @@ wsl
 | 工具 | 要求 | 说明 |
 | ---- | ---- | ---- |
 | `bobctl` | 发行包内 `./bobctl` | 安装、配置、管理 Bob |
-| `oc` | 与集群版本一致或相差一个小版本(最低 OCP 4.20) | OpenShift CLI |
+| `oc` | 与集群版本一致或相差一个小版本 | OpenShift CLI |
 | `helm` | ≥ 3.14.0 | `bobctl` 部署时调用 |
 | `bash` | ≥ 3.2 | 运行 `bobctl` |
 | `openssl` | ≥ 3.5(或系统自带) | `get-ca-cert`、`setup-route`、`reset-route` 使用 |
-
-安装 `oc` 与 `helm` 请参考官方下载页(使用对应版本的 tar 包解压到 `PATH`):
-
-- OpenShift CLI:集群 Web Console 右上角 **? → Command line tools**
-- Helm:<https://helm.sh/docs/intro/install/>
-
-校验:
-
-```bash
-oc version
-helm version
-bash --version
-openssl version
-```
 
 ## 1.3 下载并解压发行包
 
 从 [IBM Bob GitHub 仓库](https://github.com/IBM/ibm-bob) 的 Release 下载 `ibm-bob-install-<version>.tar.gz`,放到本目录(`bob/onprem/`)后:
 
-```bash
-mkdir ibm-bob
-tar -C ibm-bob -xvf ibm-bob-install-<version>.tar.gz
-cd ibm-bob
-./bobctl --help
-```
-
-> ./bobctl 是一个bash shell，windows上不可用
-
 发行包结构:
 
-| 目录 | 范围 | 内容 |
-| ---- | ---- | ---- |
-| `?ibm-bob-cluster-scoped/` | 集群级 | CRD、ClusterRole、ClusterRoleBinding,需管理员审核 |
-| `ibm-bob/` | 命名空间级 | Operator、命名空间 RBAC、ServiceAccount、Bob 工作负载 |
-
-后续 runbook 中的 `./bobctl`、`config.yaml`、`config-template.yaml` 均指该解压目录。
+```
+|- /bin
+|- /charts
+|- /etc
+|- logs
+README.md
+bobctl
+config-template.yaml
+...
+```
 
 ## 1.4 集群访问与权限
 
@@ -100,7 +84,6 @@ oc get storageclass
 
 检查项:
 
-- Bob Core 请求约 10.8 vCPU / 10.8 GiB / ~24 GiB PV;参考拓扑为 3 个 worker(各 8 vCPU / 16 GiB / 200 GiB)。
 - 需要一个 **RWX** 存储类(`global.fileStorageClass`,如 `ocs-storagecluster-cephfs`)和一个 **RWO** 块存储类(`global.blockStorageClass`,如 `ocs-storagecluster-ceph-rbd`)。PostgreSQL 强烈建议 SSD 块存储。
 - 支持的存储:Managed NFS、OpenShift Data Foundation。
 
