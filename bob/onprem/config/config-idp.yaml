@@ -1,0 +1,79 @@
+# BobIdp Configuration
+# Run: ./bobctl configure-idp --config <this-file>
+
+# ── Required ──────────────────────────────────────────────────────────────────
+
+# Email domains served by this identity provider; users with matching email domains can authenticate through IBM Bob.
+domains:
+  - example.com
+
+# ── Optional ──────────────────────────────────────────────────────────────────
+
+# Bootstrap bob-admins; removing an email demotes the user to bob-user — it does not delete their account.
+# adminEmails:
+#   - admin@example.com
+
+# Zero or more LDAP/AD user federation providers.
+# ldaps:
+#   # --- Required ---
+#   # Stable identifier used as the Keycloak component display name; do not rename after first install.
+#   - name: corp-ldap
+#   # LDAP vendor controlling wire-level protocol behaviour; values: other | ad | rhds | tivoli | edirectory
+#     vendor: other
+#   # Full connection URL including protocol and port.
+#     connectionUrl: ldaps://ldap.example.com:636
+#   # Distinguished name of the subtree where user entries live.
+#     usersDn: ou=People,dc=example,dc=com
+#   # LDAP attribute mapped to the Keycloak username.
+#     usernameLDAPAttribute: uid
+#   # LDAP attribute used as the relative distinguished name of user entries.
+#     rdnLDAPAttribute: uid
+#   # Stable, immutable LDAP attribute used as the unique identifier for each user.
+#     uuidLDAPAttribute: entryUUID
+#   # Comma-separated list of object classes that identify a user entry.
+#     userObjectClasses: inetOrgPerson,organizationalPerson,person
+#   # --- Optional ---
+#   # Distinguished name of the service account used to bind; omit for anonymous bind.
+#     bindDn: cn=bob-svc,ou=ServiceAccounts,dc=example,dc=com
+#   # Secret containing the bind password; required when bindDn is set.
+#   # Pre-create: oc create secret generic corp-ldap-bind --from-literal=password=<pw> -n <ns>
+#     bindPasswordSecret:
+#       name: corp-ldap-bind
+#       key: password
+#   # Secret containing the PEM-encoded certificate authority certificate for the LDAPS endpoint.
+#   # Pre-create: oc create secret generic corp-ldap-ca --from-file=ca.crt=./ca.pem -n <ns>
+#     ldapsCACertSecret:
+#       name: corp-ldap-ca
+#       key: ca.crt
+#   # When to use Keycloak's truststore; values: always | ldapsOnly | never
+#   # Use ldapsOnly when the server certificate is signed by a publicly-trusted certificate authority.
+#     useTruststoreSpi: always
+#   # Search depth; 1 = one-level (direct children of usersDn only), 2 = subtree.
+#     searchScope: 2
+#   # Additional LDAP filter applied to every user search; use to exclude non-user entries.
+#     customUserSearchFilter: "(uid=*)"
+#   # Order in which Keycloak queries providers when multiple are configured; lower number = checked first.
+#     priority: 0
+#   # User synchronisation; when enabled, triggers a full sync on first create; when disabled, users are provisioned on first login.
+#     userSync:
+#       enabled: false
+#   # Maps LDAP attributes to Keycloak user model attributes; the username mapper is always generated automatically.
+#     userAttributeMappings:
+#       - ldapAttribute: mail
+#         userModelAttribute: email
+#       - ldapAttribute: givenName
+#         userModelAttribute: firstName
+#       - ldapAttribute: sn
+#         userModelAttribute: lastName
+#   # Maps LDAP groups into Keycloak; bob-admins and bob-users are excluded automatically.
+#     groupMapper:
+#       groupsDn: ou=Groups,dc=example,dc=com  # required; base distinguished name where group entries live
+#       name: groups
+#       groupNameLdapAttribute: cn
+#       groupObjectClasses: groupOfNames
+#       membershipLdapAttribute: member
+#       membershipAttributeType: DN            # DN = full distinguished names, UID = plain usernames
+#       userRolesRetrieveStrategy: LOAD_GROUPS_BY_MEMBER_ATTRIBUTE  # or GET_GROUPS_FROM_USER_MEMBEROF_ATTRIBUTE
+#       memberOfLdapAttribute: memberOf        # only used when userRolesRetrieveStrategy is GET_GROUPS_FROM_USER_MEMBEROF_ATTRIBUTE
+#       customGroupSearchFilter: "(cn=dept-*)" # must be enclosed in parentheses
+#       groupsPath: "/"

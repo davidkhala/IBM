@@ -1,0 +1,3 @@
+logs/
+# artifacts of ./bobctl generate-cluster-resources
+work/

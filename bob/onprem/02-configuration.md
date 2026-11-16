@@ -1,18 +1,15 @@
 # 02 — 配置
 
-在解压后的发行包目录(`bob/onprem/ibm-bob/`)内操作。需要准备三类配置:
+需要准备三类配置:
 
 | 文件 | 必需 | 用途 |
 | ---- | ---- | ---- |
 | `config.yaml` | 是 | 命名空间、存储类、镜像仓库、add-on、模型密钥 |
-| `model-gateway.yaml` | 建议 | LLM 端点定义;缺省则 Bob 无模型可用 |
-| `my-idp.yaml` | 否 | LDAP/AD 联邦,安装后通过 `bobctl configure-idp` 应用 |
+| `config-model-gateway.yaml` | 建议 | LLM 端点定义;缺省则 Bob 无模型可用 |
+| `config-idp.yaml` | 否 | LDAP/AD 联邦,安装后通过 `bobctl configure-idp` 应用 |
 
 ## 2.1 config.yaml
-
-```bash
-cp config-template.yaml config.yaml
-```
+`config.yaml` 不含证书设置,TLS 在安装后用 `bobctl setup-route` 配置。
 
 ### global
 
@@ -37,17 +34,6 @@ global:
   imagePullSecretName: ibm-entitlement-key
 ```
 
-### bob(add-on,Bob Core 无需开启)
-
-| 字段 | 默认 | 说明 |
-| ---- | ---- | ---- |
-| `rag.enabled` | false | Z Premium Package(RAG),自动包含 OpenSearch |
-| `zProxy.enabled` | false | Z Premium Package(Proxy),需要 `rag.enabled: true` |
-| `understand.enabled` | false | Z Understand and Refactor |
-
-> 开启 add-on 会显著增加资源占用(Core + Z Context + Z Understand 约 35.8 vCPU / 84.8 GiB / ~55 GiB PV),开启前先核对容量。
-
-`config.yaml` 不含证书设置,TLS 在安装后用 `bobctl setup-route` 配置。
 
 ## 2.2 模型网关
 

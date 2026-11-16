@@ -1,7 +1,5 @@
 # 03 — 安装
 
-所有命令在 WSL 的 `bob/onprem/ibm-bob/` 目录下执行。
-
 ## 3.0 选择安装方式
 
 | 方面 | Connected | Air-gapped(直接镜像) | Air-gapped(间接镜像) |
@@ -13,16 +11,6 @@
 
 本环境已登录 `cp.icr.io`,按 **Connected** 执行(3.1)。Air-gapped 见 3.5。
 
-## 3.1 安装前确认
-
-```bash
-oc whoami && oc whoami --show-server     # 确认是目标集群的 cluster-admin
-oc get crd | grep cert-manager.io        # cert-manager 已就绪
-test -f config.yaml && echo "config.yaml OK"
-test -n "$IBM_ENTITLEMENT_KEY" && echo "key set"
-```
-
-(`IBM_ENTITLEMENT_KEY` 通过 WSLENV 从 PowerShell 传入,见 [01-prerequisites.md](./01-prerequisites.md) 1.1。)
 
 ## 3.2 生成并应用集群级资源
 
