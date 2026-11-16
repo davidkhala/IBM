@@ -1,4 +1,5 @@
 # 01 — 前置条件
+- 支持的 OCP 版本:4.20 / 4.21 / 4.22。
 
 
 ## Hardware requirement
@@ -20,33 +21,25 @@ Storage I/O
 工作站工具(Linux)
 | 工具 | 要求 | 说明 |
 | ---- | ---- | ---- |
+| `bobctl` | 发行包内 `./bobctl` | 安装、配置、管理 Bob |
 | `oc` | 与集群版本一致或相差一个小版本(最低 OCP 4.20) | OpenShift CLI |
 | `helm` | ≥ 3.14.0 | `bobctl` 部署时调用 |
 | `bash` | ≥ 3.2 | 运行 `bobctl` |
 | `openssl` | ≥ 3.5(或系统自带) | `get-ca-cert`、`setup-route`、`reset-route` 使用 |
 
+安装 `oc` 与 `helm` 请参考官方下载页(使用对应版本的 tar 包解压到 `PATH`):
 
-## 1.1 IBM Entitled Registry 登录
+- OpenShift CLI:集群 Web Console 右上角 **? → Command line tools**
+- Helm:<https://helm.sh/docs/intro/install/>
 
-Bob 后端镜像位于 IBM Entitled Container Registry(`cp.icr.io`,部分镜像在 `icr.io`),发行包不含镜像。
+校验:
 
-entitlement key 获取:登录 [My IBM Container software library](https://myibm.ibm.com/products-services/containerlibrary) → **Active entitlement keys** → [Add new key]/[Copy]
-
-
+```bash
+oc version
+helm version
+bash --version
+openssl version
 ```
-podman login -u cp cp.icr.io # interactive password input
-podman login --get-login cp.icr.io          # 期望输出: cp
-```
-
-> 说明:`podman login` 只证明 key 有效、本机可访问 `cp.icr.io`。安装时 `bobctl install` 需要单独传入 `--registry-creds cp:<key>` 来在集群内创建镜像拉取 Secret(默认名 `ibm-entitlement-key`?),**不会**读取 podman 的登录状态。
-
-`global.imagePullPrefix` 默认为 `icr.io`,建议同时验证该域名，注意这里使用的是IBM Cloud API key:
-
-```
-podman login -u iamapikey icr.io # interactive password input, using IBM Cloud API key
-podman login --get-login icr.io  # 期望输出: iamapikey
-```
-
 
 ## 1.3 下载并解压发行包
 
@@ -54,15 +47,12 @@ podman login --get-login icr.io  # 期望输出: iamapikey
 
 发行包结构:
 
-```
-|- /bin
-|- /charts
-|- /etc
-|- logs
-README.md
-bobctl
-...
-```
+| 目录 | 范围 | 内容 |
+| ---- | ---- | ---- |
+| `?ibm-bob-cluster-scoped/` | 集群级 | CRD、ClusterRole、ClusterRoleBinding,需管理员审核 |
+| `ibm-bob/` | 命名空间级 | Operator、命名空间 RBAC、ServiceAccount、Bob 工作负载 |
+
+后续 runbook 中的 `./bobctl`、`config.yaml`、`config-template.yaml` 均指该解压目录。
 
 ## 1.4 集群访问与权限
 
@@ -72,7 +62,7 @@ bobctl
 oc login <api-server> --token=<cluster-admin-token>
 oc whoami # kubeadmin
 oc whoami --show-server # https://api.crc.testing:6443
-oc get clusterversion        # VERSION 须为 4.20 / 4.21 / 4.22
+oc get clusterversion   # VERSION 须为 4.20 / 4.21 / 4.22
 ```
 
 确认当前上下文就是目标集群后再继续。
@@ -84,8 +74,8 @@ oc get storageclass
 ```
 
 支持的存储Supported storage classes
-- OpenShift Data Foundation (ODF)
-- Managed NFS
+- `ocs-storagecluster-cephfs`: OpenShift Data Foundation (ODF)
+- `managed-nfs-storage`: Managed NFS
 
 ## 1.6 安装 cert-manager(v1.14+)
 
@@ -125,11 +115,5 @@ oc run net-test --rm -it --restart=Never --image=registry.access.redhat.com/ubi9
 
 ## 检查清单
 
-- [ ] `podman login --get-login cp.icr.io` 返回 `cp`
-- [ ] `oc` / `helm` / `bash` / `openssl` 版本满足要求
-- [ ] 发行包已解压,`./bobctl --help` 正常
-- [ ] `oc whoami` 为 cluster-admin,`oc get clusterversion` 为 4.20–4.22
-- [ ] 已确认 RWX / RWO 存储类名称
-- [ ] cert-manager ≥ v1.14 运行正常
 - [ ] 核心模型与 guardrail 模型端点已就绪且集群可达
 - [ ] 已确定证书策略与 DNS 方案

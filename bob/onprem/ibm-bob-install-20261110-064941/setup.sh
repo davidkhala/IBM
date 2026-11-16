@@ -3,12 +3,11 @@ set -e
 # $IBM_ENTITLEMENT_KEY is required
 
 if [ -z "${IBM_ENTITLEMENT_KEY}" ]; then
-    set +o history
-    read -s -p "Enter IBM Entitlement Key: " IBM_ENTITLEMENT_KEY && export IBM_ENTITLEMENT_KEY
-    set -o history
-    echo # 换行，因为 -s 不会回显换行符
+	set +o history
+	read -s -p "Enter IBM Entitlement Key: " IBM_ENTITLEMENT_KEY && export IBM_ENTITLEMENT_KEY
+	set -o history
+	echo # 换行，因为 -s 不会回显换行符
 fi
-
 
 entitle() {
 	echo $IBM_ENTITLEMENT_KEY | podman login -u cp --password-stdin cp.icr.io
@@ -20,7 +19,13 @@ entitle() {
 
 plan() {
 	./bobctl generate-cluster-resources
-    oc apply -f work/cluster-resources.yaml --force-conflicts --server-side
-    ./bobctl install --registry-creds "cp:${IBM_ENTITLEMENT_KEY}" --accept-license --model-config ../config/config-model-gateway.yaml --dry-run
+	oc apply -f work/cluster-resources.yaml --force-conflicts --server-side
+	./bobctl install --registry-creds "cp:${IBM_ENTITLEMENT_KEY}" --accept-license --model-config ../config/config-model-gateway.yaml --dry-run
 }
+install() {
+	./bobctl install --registry-creds "cp:${IBM_ENTITLEMENT_KEY}" --accept-license
+	#  --model-config ../config/config-model-gateway.yaml
+	oc logs -n ibm-bob-operators deployment/ibm-bob-operator -f
+}
+
 $@

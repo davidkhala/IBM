@@ -19,13 +19,12 @@
 
 - 两个命名空间:Operator namespace(默认 `ibm-bob-operators`)与 Instance namespace(默认 `ibm-bob`),均由 `bobctl` 自动创建,**不要手工创建**。
 - 两步部署:先由 cluster-admin 应用集群级资源(CRD、ClusterRole 等),再运行 `bobctl install`(仅在两个命名空间内操作)。
-- 支持的 OCP 版本:4.20 / 4.21 / 4.22。
 - 推理模型(LLM)不包含在安装内,需要自行准备。
 
 
 ## 约定变量
 
-下列变量贯穿所有 runbook,按需在 bash 会话中设置:
+?下列变量贯穿所有 runbook,按需在 bash 会话中设置:
 
 ```bash
 export OPERATOR_NS=ibm-bob-operators   # 与 config.yaml 的 global.operatorNamespace 一致
@@ -33,6 +32,4 @@ export INSTANCE_NS=ibm-bob             # 与 config.yaml 的 global.instanceName
 ```
 
 ## 敏感信息
-
-- entitlement key 只通过环境变量 `IBM_ENTITLEMENT_KEY` 传递,不要写入任何文件。
 - `config.yaml`(含模型密钥)、`model-gateway.yaml`、TLS 私钥、解压后的发行包均已在本目录 [.gitignore](./.gitignore) 中排除,不得提交到版本控制。
