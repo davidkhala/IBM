@@ -82,6 +82,8 @@ oc get storageclass
 `bobctl install` 启动时会检查 cert-manager CRD,缺失则立即中止。
 
 推荐方式:OperatorHub(aka. Software Catalog) 安装 **cert-manager Operator for Red Hat OpenShift**,channel 选 `stable-v1`
+- 在ROKS on IBM CLoud的环境上，如果在IBM Cloud 的Cluster 的Overview控制面，`Networking` section > `Outbound traffic protection enabled`是provision 的设置。则会由于`disableAllDefaultSources: true`导致访问不了catalog source
+  - solution:`oc patch operatorhub cluster --type merge -p '{"spec":{"disableAllDefaultSources":false}}'`
 
 校验:
 

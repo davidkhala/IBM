@@ -21,7 +21,7 @@
 产物:`work/cluster-resources.yaml`,仅含 `ibm-bob-cluster-scoped/` 中的 CRD、ClusterRole、ClusterRoleBinding 等。**应用前请管理员或安全团队审阅。**
 
 ```bash
-less work/cluster-resources.yaml
+
 oc apply -f work/cluster-resources.yaml --force-conflicts --server-side
 ```
 

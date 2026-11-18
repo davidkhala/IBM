@@ -24,8 +24,16 @@ plan() {
 }
 install() {
 	./bobctl install --registry-creds "cp:${IBM_ENTITLEMENT_KEY}" --accept-license
-	#  --model-config ../config/config-model-gateway.yaml
 	oc logs -n ibm-bob-operators deployment/ibm-bob-operator -f
+}
+install-status() {
+	oc get deployment -n ibm-bob-operators
+	echo "# oc get bob -n ibm-bob"
+	oc get bob -n ibm-bob
+}
+update-model() {
+	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets --dry-run
+	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets
 }
 
 $@
