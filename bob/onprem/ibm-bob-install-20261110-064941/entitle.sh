@@ -6,10 +6,10 @@ if [ -z "${IBM_ENTITLEMENT_KEY}" ]; then
 	set +o history
 	read -s -p "Enter IBM Entitlement Key: " IBM_ENTITLEMENT_KEY && export IBM_ENTITLEMENT_KEY
 	set -o history
-	echo # 换行，因为 -s 不会回显换行符
+	echo # linebreak
 fi
 
-entitle() {
+podman() {
 	echo $IBM_ENTITLEMENT_KEY | podman login -u cp --password-stdin cp.icr.io
 	podman login --get-login cp.icr.io # expected output: cp
 	podman login -u iamapikey icr.io   # interactive password input, using IBM Cloud API key
@@ -25,15 +25,6 @@ plan() {
 install() {
 	./bobctl install --registry-creds "cp:${IBM_ENTITLEMENT_KEY}" --accept-license
 	oc logs -n ibm-bob-operators deployment/ibm-bob-operator -f
-}
-install-status() {
-	oc get deployment -n ibm-bob-operators
-	echo "# oc get bob -n ibm-bob"
-	oc get bob -n ibm-bob
-}
-update-model() {
-	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets --dry-run
-	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets
 }
 
 $@
