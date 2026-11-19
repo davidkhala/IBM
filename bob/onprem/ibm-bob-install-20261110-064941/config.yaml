@@ -37,8 +37,8 @@ global:
   # Default: ibm-entitlement-key
   imagePullSecretName: ibm-entitlement-key
 
-# ── Bob instance settings ─────────────────────────────────────────────────────
-# bob:
+  # ── Bob instance settings ─────────────────────────────────────────────────────
+  # bob:
   # Cluster base domain (e.g. apps.cluster.example.com). Bob hostnames are derived from it:
   # bob.<instanceNamespace>.<externalDomain> and <service>.<instanceNamespace>.<externalDomain>.
   # On OpenShift it is detected automatically from the cluster ingress configuration.
@@ -80,7 +80,6 @@ global:
   #   # Optional; when omitted the controller substitutes a default key name.
   #   # hashApiSecretKeyName: ""
 
-
   # Enable the optional Z Understand and Refactor workload.
   # understand:
   #   enabled: false
@@ -88,11 +87,11 @@ global:
   # Model gateway configuration.
   # secrets: API keys injected as environment variables into the model gateway
   # and referenced in the model gateway configuration.
-  # modelGateway:
-  #   secrets:
-  #     AWS_ACCESS_KEY: ""          # AWS access key for Bedrock model access
-  #     AWS_SECRET_ACCESS_KEY: ""   # AWS secret access key for Bedrock model access
-  #     AZURE_API_KEY: ""           # API key for Azure OpenAI model access
-  #     GEMINI_CREDENTIALS: ""      # Credentials for Google Gemini model access
+  modelGateway:
+    secrets:
+      #     AWS_ACCESS_KEY: ""          # AWS access key for Bedrock model access
+      #     AWS_SECRET_ACCESS_KEY: ""   # AWS secret access key for Bedrock model access
+      AZURE_API_KEY: "" # API key for Azure OpenAI model access
+      GEMINI_CREDENTIALS: "" # Service-account JSON, base64-encoded, single line
   #     MY_INFERENCE_API_KEY: ""    # API key for a custom inference service
   #     ...                         # Extend with additional secrets as desired

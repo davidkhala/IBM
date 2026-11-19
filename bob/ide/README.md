@@ -10,3 +10,15 @@
 - us-east.apprapp.cloud.ibm.com
 - raw.githubusercontent.com
 - ibm.gallery.vsassets.io
+
+## Connect to Bob Self-host
+
+需要配置`~/.bob/settings/settings.json`
+
+```
+{
+  ...
+  "gatewayUrl": "https://api.bob.ibm-bob.bob-d4375da7964138e25578b22062c779db-0000.jp-tok.containers.appdomain.cloud"
+}
+
+```

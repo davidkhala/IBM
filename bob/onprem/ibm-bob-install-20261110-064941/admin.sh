@@ -1,16 +1,16 @@
 set -e
 
-bob-status() {
+bobStatus() {
 	oc get deployment -n ibm-bob-operators
 	echo "# oc get bob -n ibm-bob"
 	oc get bob -n ibm-bob
 }
-update-model() {
+updateModel() {
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets --dry-run
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets
 }
 
-install-certman() {
+installCertman() {
 	# Create the operator namespace
 	if oc get project cert-manager-operator >/dev/null 2>&1; then
 		echo "# project cert-manager-operator exists, skip"
@@ -54,10 +54,15 @@ EOF
 	fi
 
 }
-certman-status() {
+certmanStatus() {
 	# Verify installation
 	oc get csv -n cert-manager-operator
 	oc get pods -n cert-manager
 
 }
+gcp() {
+	local path_to_json=$1
+	base64 -i $path_to_json | tr -d '\n'
+}
+
 $@

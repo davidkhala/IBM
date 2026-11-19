@@ -24,6 +24,17 @@ or on windows
 
 Then start TUI by `bob --accept-license`
 
+### Connect to Bob Self-hosted
+
+```
+export BOB_GATEWAY_URL= # 
+export BOB_WEB_LOGIN_URL= # 
+
+bob --gateway-url $BOB_GATEWAY_URL --web-login-url $BOB_WEB_LOGIN_URL
+```
+
+
+
 
 ### Ralph loop
 

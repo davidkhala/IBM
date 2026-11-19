@@ -36,7 +36,7 @@ x-providers:
   azure: &azure
     openai_compatible:
       model: gpt-5.6-sol                          # Model ID as expected by the provider
-      base_url: https://<resource>.cognitiveservices.azure.com/openai
+      base_url: https://<resource>.cognitiveservices.azure.com/openai # TODO 
       api_key: env.AZURE_API_KEY              # env.<VAR> reads from the model gateway secrets
     model_info:
       exposed: true
@@ -71,9 +71,9 @@ x-providers:
   gemini: &gemini
     vertex:
       model: gemini-3.6-flash
-      project: <gcp-project-id>                   # GCP project ID
+      project: gcp-data-davidkhala                # TODO GCP project ID
       location: global                            # Vertex AI region / "global" for Global API
-      credentials: env.GEMINI_CREDENTIALS     # Service-account JSON, base64-encoded
+      credentials: env.GEMINI_CREDENTIALS     # Service-account JSON, base64-encoded. Required Role: Agent Platform User `roles/aiplatform.user`
     model_info:
       exposed: true
       provider: google
