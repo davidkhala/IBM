@@ -4,15 +4,26 @@ version = "0.0.0"
 authors = [{ name = "David Liu" }]
 requires-python = ">=3.12"
 dependencies = [
-    "davidkhala.databases==0.1.7",
+    "davidkhala.databases",
 ]
+[project.optional-dependencies]
+gemini = ["davidkhala.ai.models[gemini]", "davidkhala.gcp"]
 
 [dependency-groups]
 dev = [
     "pytest"
 ]
 
+[tool.hatch.build.targets.sdist]
+include = ["davidkhala"]
+
+[tool.hatch.build.targets.wheel]
+include = ["davidkhala"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.pytest.ini_options]
-pythonpath = ["."]
-addopts = "-s" # not to capture stdout by pytest
+addopts = "-s -v"
 
