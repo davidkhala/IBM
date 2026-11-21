@@ -4,10 +4,19 @@ bobStatus() {
 	oc get deployment -n ibm-bob-operators
 	echo "# oc get bob -n ibm-bob"
 	oc get bob -n ibm-bob
+	oc get pods -n ibm-bob -l app=bob-inference
 }
 updateModel() {
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets --dry-run
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets
+	oc rollout restart deploy/bob-inference -n ibm-bob
+}
+testModel(){
+  
+
+  oc logs -n ibm-bob deploy/bob-inference --since=5m
+
+  oc exec -n ibm-bob deploy/bob-gateway -- curl -sk https://bob-inference.ibm-bob.svc.cluster.local:7330/v1/model/info | jq .
 }
 
 installCertman() {

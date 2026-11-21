@@ -36,7 +36,7 @@ x-providers:
   azure: &azure
     openai_compatible:
       model: gpt-5.6-sol                          # Model ID as expected by the provider
-      base_url: https://<resource>.cognitiveservices.azure.com/openai # TODO 
+      base_url: https://ai-sg.cognitiveservices.azure.com/openai # TODO 
       api_key: env.AZURE_API_KEY              # env.<VAR> reads from the model gateway secrets
     model_info:
       exposed: true
@@ -109,7 +109,7 @@ models:
   # Change <<: *isvc to eg. *azure, *bedrock, or *gemini to
   # switch providers / models to one fully configured above
   - &chat_llm
-    <<: *isvc                      # ← change provider here
+    <<: *gemini                      # ← TODO change provider here
     model_name: premium-ide
     model_info:
       exposed: true

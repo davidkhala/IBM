@@ -38,12 +38,12 @@ global:
   imagePullSecretName: ibm-entitlement-key
 
   # ── Bob instance settings ─────────────────────────────────────────────────────
-  # bob:
+bob:
   # Cluster base domain (e.g. apps.cluster.example.com). Bob hostnames are derived from it:
   # bob.<instanceNamespace>.<externalDomain> and <service>.<instanceNamespace>.<externalDomain>.
   # On OpenShift it is detected automatically from the cluster ingress configuration.
   # Required on plain Kubernetes. It cannot be changed after installation.
-  # externalDomain: apps.cluster.example.com
+  externalDomain: apps-crc.testing # TODO
 
   # Enable Retrieval-Augmented Generation (RAG).
   # When true, OpenSearch is automatically included in the deployment and image mirroring.
@@ -92,6 +92,6 @@ global:
       #     AWS_ACCESS_KEY: ""          # AWS access key for Bedrock model access
       #     AWS_SECRET_ACCESS_KEY: ""   # AWS secret access key for Bedrock model access
       AZURE_API_KEY: "" # API key for Azure OpenAI model access
-      GEMINI_CREDENTIALS: "" # Service-account JSON, base64-encoded, single line
+      GEMINI_CREDENTIALS: "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAiZ2NwLWRhdGEtZGF2aWRraGFsYSIsCiAgInByaXZhdGVfa2V5X2lkIjogIjAzZGRkZGUyNDM5OGI1NGZjN2E5MGQzMmJjMDI2MWI4Y2ZmYTI1ZjEiLAogICJwcml2YXRlX2tleSI6ICItLS0tLUJFR0lOIFBSSVZBVEUgS0VZLS0tLS1cbk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRQzFqUjhwTjNpaUloWFFcbko1ckFFWkROTFZuclM3MVJHTDEvMVpKK2pBNE0zOUl1MCtyUEJpUW1IbWc4VGFRVHBkdnJPSEdYb2VWNEFGaWdcbjBGY2U1RCtkc3VxRFUvMTFxRE9RR1ZyYmJ1L3ZCUW1lTUN4cWREZlhpRHNsWml6YWluV3BjRC9iOURZQXZPaXlcblpocFRrSTZaYkQwVHBwVzEyNXBoSDdVK0svdWNGSFdSNjdjOWNFdDdCclZCYXJkMDA2ZkR4M3ZmWTlVWUVPR0hcbm52aGlBVnYzZmp2T2tzaFVCTmVWbEZrbEltRzRFSzQzZFNhMjI4R0hPblZCQmN5UW9pRFQremkrekZlZnlYeEpcblF3c3cyWU9vU2R3cmxZTWFlWkRZRGQvWTdJWng4SGc0cmNBYTNLSS90THNrbXNPMDBGQWxwQS8wYldEeHNoeGZcblpBZmVpRmFyQWdNQkFBRUNnZ0VBUS9LZFJ2L0wxbUtMWjJ4ckxwZGthbVllMFVGM2lYS0krZDhsQk5mR0ttdGFcbmJzeEJoVm4zRFkwejFkMzVHcUZvdlpCU2N6M1VkQ1V0Qm9MekdFeTB3b0RENUlMNnlaNDZMaVJQTFBGSU8xelhcblRLMGE4bnlzcWE0QzlPeFl2VEkwOTBWYm9TYTFUM0ZrWmVCdzJmV3dhUnRwZ0lGSVp0ZlozNS9PWllad2xPa3hcbnVueTQ0RDJVU2pFdTJkbHpMVjRqbldWS0xTV1hpdjR3OEg4VHQyd1UvZnUrNE1KTGlhbVZRcWxGWUg5V01rSytcbjJiTW96bHQxRVZ4azdWSjVlM3RXL056THJ4QkR5STFIQzJnWkZGZkxlM1Vxb2l2S3RobFIyaUQ1aW1SdnBObjJcbmJkV0hyNEtxVzk0OHRuL3ZRcWhpVlZUQkNnbFVsZHBOdHNaZ3FiZ2ZBUUtCZ1FEanFuczVjVTc4K214a05sTXpcbldPd0V2Y1lCNDdLVWwveFJpc243SkVQQSttZWhNVXBEenY5T3lnVjF2UWU5R3pMaHFhMnoyMlpUdk5Ha2RuNEZcbjhJVWZwOG03c3dNMTh5UGdOM0lhaG8rc3VKN1UwZlp1TTV1ak5FRkU2bkRObm1qSUFIZlZhYlVtVE1LMUtXUS9cblRIMEk2b0pSNC9yT3NKK04zRFVOaFVUcEl3S0JnUURNSldqeERkdWZsR3IybGNhNCtYMldDMnh3bXl4RzF3WVRcbmwzZVlwTWIrbEFySHZTcXFJcHdCa2ZZQmg4aVVaZFVhazVwVm5pQzZUbnhKd20vOTYrQ3h3L05ISm92N2dnMTdcbnY5VG1yc25DQnpVUmRjYXhCVGV2Kzhaalh3Njg1M2dLVUhkOHdoUllENVFWZGxKWVMxc1RKeStKVHFDcyswZjFcbkNPYnRKNzNvMlFLQmdRQy9oVDg4UjVISFIzTy9xZU84SW1ZS1p3c1hzOUViSi9CZk9INUtBMnZyLzdzRjQwMHlcblZnUjQ1NEpJVmNrWTBMU3hHZWpDa1NNMzluUDJBcWhwbnJpZXRLd0Vkc2VRcndYVExWR1Q5dmNPdWhFRHY4MnJcblQwYnl1SmJmdnNrK2NMQjg3OGZmaEptYnFwOXhmMnlSdzJxOEFXdTRNQzFoaXp2dVB2MXlibFpXT1FLQmdHVEdcbmt1ZHNUOTZYQmJaMGVZVVdwRWhObTFwN1A0QTQ1V2NHZnFON3RFQTRGSnBGWjZwVksyNGEvN1lCc2FLUUlvTGNcbkduUHBlMzU5QUIzcFBoKzdNVkNQeXFoMC91VkpiaDZJdERDc1dDelFJZ0pjZ1praFdqd2xyZW1nSTBaZGZZU1pcbjlHSkI3SWtNSjYzd212VzdQVnBYSGNCS2NFYjBSTEZSazYyKzBLRUJBb0dBRUd4bW5YaExMOUhNYUp0anZHWkFcbndFM0lNMHN0Um93QWdGaXRyNFpnOFFaayttaXVka2hTSFRRWmsvWFM2allncXhZd1U2bDVUYlVuaTFLUmtxMmRcbmtrb3lxNUpiN0JxR00wTlZBRXRiQkxSRUVFeTRMak5YcllreHBJYXRPRWRQRUt4RlBsWkZ2bDRCdUM4TDdSdUZcbkI3VTdVM1BQcS9xcVJSVTdBbFZMcHZRPVxuLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLVxuIiwKICAiY2xpZW50X2VtYWlsIjogImJvYi1vbnByZW1AZ2NwLWRhdGEtZGF2aWRraGFsYS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgImNsaWVudF9pZCI6ICIxMTcwNzc4ODA5NDA2NjA4NTY3ODIiLAogICJhdXRoX3VyaSI6ICJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20vby9vYXV0aDIvYXV0aCIsCiAgInRva2VuX3VyaSI6ICJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsCiAgImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9vYXV0aDIvdjEvY2VydHMiLAogICJjbGllbnRfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9yb2JvdC92MS9tZXRhZGF0YS94NTA5L2JvYi1vbnByZW0lNDBnY3AtZGF0YS1kYXZpZGtoYWxhLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwKICAidW5pdmVyc2VfZG9tYWluIjogImdvb2dsZWFwaXMuY29tIgp9" # Service-account JSON, base64-encoded, single line
   #     MY_INFERENCE_API_KEY: ""    # API key for a custom inference service
   #     ...                         # Extend with additional secrets as desired
