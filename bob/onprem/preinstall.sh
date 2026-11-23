@@ -35,7 +35,7 @@ ocCheck() {
 }
 
 netCheck() {
-	local base_url=$1
+	local base_url=$1 # https://httpbin-388394439802.asia-east2.run.app
 	oc run net-test --rm -it --restart=Never --image=registry.access.redhat.com/ubi9/ubi-minimal -- curl -sS -o /dev/null -w '%{http_code}\n' --max-time 10 $base_url
 }
 

@@ -10,11 +10,29 @@ domains:
 # ── Optional ──────────────────────────────────────────────────────────────────
 
 # Bootstrap bob-admins; removing an email demotes the user to bob-user — it does not delete their account.
-# adminEmails:
-#   - admin@example.com
+adminEmails:
+  - admin@example.com
 
 # Zero or more LDAP/AD user federation providers.
-# ldaps:
+ldaps:
+  - name: 389-ds
+    vendor: rhds
+    connectionUrl: ldaps://ds389.ibm-bob.svc.cluster.local:636
+    usersDn: ou=People,dc=example,dc=com
+    usernameLDAPAttribute: uid
+    rdnLDAPAttribute: uid
+    uuidLDAPAttribute: nsUniqueId
+    userObjectClasses: inetOrgPerson,organizationalPerson,person
+    bindDn: cn=bob-svc,ou=ServiceAccounts,dc=example,dc=com
+    bindPasswordSecret:
+      name: corp-ldap-bind
+      key: password
+    ldapsCACertSecret:
+      name: corp-ldap-ca
+      key: ca.crt
+    useTruststoreSpi: always
+    userSync:
+      enabled: true
 #   # --- Required ---
 #   # Stable identifier used as the Keycloak component display name; do not rename after first install.
 #   - name: corp-ldap
