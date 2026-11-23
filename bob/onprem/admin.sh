@@ -7,16 +7,15 @@ bobStatus() {
 	oc get pods -n ibm-bob -l app=bob-inference
 }
 updateModel() {
+	cd ibm-bob-install-*
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets --dry-run
 	./bobctl update-model-config --model-config ../config/config-model-gateway.yaml --update-secrets
+	cd -
 	oc rollout restart deploy/bob-inference -n ibm-bob
 }
-testModel(){
-  
-
-  oc logs -n ibm-bob deploy/bob-inference --since=5m
-
-  oc exec -n ibm-bob deploy/bob-gateway -- curl -sk https://bob-inference.ibm-bob.svc.cluster.local:7330/v1/model/info | jq .
+modelStatus() {
+	oc logs -n ibm-bob deploy/bob-inference --since=5m
+	oc exec -n ibm-bob deploy/bob-gateway -- curl -sk https://bob-inference.ibm-bob.svc.cluster.local:7330/v1/model/info | jq .
 }
 
 installCertman() {
@@ -67,7 +66,7 @@ certmanStatus() {
 	# Verify installation
 	oc get csv -n cert-manager-operator
 	oc get pods -n cert-manager
-
+	oc get crd certificates.cert-manager.io issuers.cert-manager.io clusterissuers.cert-manager.io certificaterequests.cert-manager.io # 核心 CRD 存在检查
 }
 gcp() {
 	local path_to_json=$1
