@@ -6,6 +6,11 @@
 curl -fsSL https://bob.ibm.com/download/bobshell.sh | bash
 ```
 
+linux: root install
+```
+sudo npm install --registry=https://registry.npmjs.org/ --allow-scripts=@officecli/officecli -g @ibm/bob
+```
+
 windows install
 
 ```powershell

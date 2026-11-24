@@ -14,13 +14,11 @@ updateModel() {
 	oc rollout restart deploy/bob-inference -n ibm-bob
 }
 
-# 用法: ./admin.sh configureIdp [--dry-run]
 configureIdp() {
 	cd ibm-bob-install-*
 	./bobctl configure-idp --config ../config/config-idp.yaml --dry-run
-	if [ "$1" != "--dry-run" ]; then
-		./bobctl configure-idp --config ../config/config-idp.yaml
-	fi
+	./bobctl configure-idp --config ../config/config-idp.yaml
+	
 	cd -
 }
 idpStatus() {
@@ -35,8 +33,6 @@ open() {
 }
 # 按邮箱追踪一次登录: Keycloak 认证 -> bob-authn 权限查询 -> bob-admin 的 SCIM 开通
 # 用法: ./admin.sh loginTrace alice@example.com   (SINCE=30m 可调整时间范围,默认 15m)
-# 常见现象: 新用户首次登录出现 account_not_provisioned,是因为 bob-authn 查权限(15:31)早于 SCIM 同步(间隔 1~2 分钟),
-#           看到 "SCIM Create: user provisioned" 后重新登录即可。
 loginTrace() {
 	local email=${1:?usage: ./admin.sh loginTrace <email>} since=${SINCE:-15m}
 	local user=${email%@*}

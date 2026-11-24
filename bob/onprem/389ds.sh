@@ -3,12 +3,12 @@ set -e
 # 在 OpenShift(CRC) 内部署 389ds,作为 BobIdp 的 rhds LDAPS 后端。
 # 用法: ./389ds.sh <函数> [参数]
 #   ./389ds.sh deploy                         # 证书 + 部署 + 初始化目录 + 创建 bobctl 需要的 Secret
-#   ./389ds.sh addUser <uid> <mail> <password>
-#   ./389ds.sh status | testLdaps | idpInject [配置文件] | uninstall
+#   ./389ds.sh addUser <uid> <mail>           # 密码在提示符处交互输入
+#   ./389ds.sh status | listUsers | idpInject [配置文件] | uninstall
 #
 # 命名空间固定为 ibm-bob,Service 固定为 ds389,镜像固定为 quay.io/389ds/dirsrv:latest,均直接写在用到的地方。
 # LDAPS 地址: ldaps://ds389.ibm-bob.svc.cluster.local:636  (证书 SAN 与之一致;
-# 改 Service 名或命名空间时,要同时改 certs 的 dnsNames、workload 的 Service、testLdaps、_idpItem)
+# 改 Service 名或命名空间时,要同时改 certs 的 dnsNames、workload 的 Service、listUsers、_idpItem)
 
 BASE_DN=${BASE_DN:-dc=example,dc=com}
 STORAGE=${STORAGE:-2Gi}
@@ -190,6 +190,22 @@ spec:
       targetPort: ldap
 EOF
 	oc rollout status deploy/ds389 -n ibm-bob --timeout=300s
+	waitDmPassword
+}
+
+# readinessProbe 只检查 LDAPI 自动绑定,而 dscontainer 先用临时密码初始化、稍后才把 DS_DM_PASSWORD 设进去,
+# 所以 Pod Ready 时密码可能还没生效(此时绑定会报 49 Invalid credentials)。这里用密码真实绑定一次,成功才继续。
+waitDmPassword() {
+	local i
+	for i in $(seq 1 30); do
+		if oc exec -n ibm-bob deploy/ds389 -c ds389 -- sh -c \
+			'ldapwhoami -x -H ldap://localhost:3389 -D "cn=Directory Manager" -w "$DS_DM_PASSWORD"' >/dev/null 2>&1; then
+			return
+		fi
+		sleep 2
+	done
+	echo "# Directory Manager 密码 60 秒内未生效,检查: oc logs -n ibm-bob deploy/ds389" >&2
+	return 1
 }
 
 # 在 ds389 pod 里以 Directory Manager 身份执行 ldap 命令,密码取自 pod 环境变量
@@ -278,14 +294,25 @@ caSecret() {
 }
 
 addUser() {
-	local uid=$1 mail=$2 pw=$3
-	if [ -z "$uid" ] || [ -z "$mail" ] || [ -z "$pw" ]; then
-		echo "usage: $0 addUser <uid> <mail> <password>" >&2
+	# Interactive password capture
+	local uid=$1 mail=$2 pw
+	if [ -z "$uid" ] || [ -z "$mail" ]; then
+		echo "usage: $0 addUser <uid> <mail>" >&2
 		return 1
 	fi
 	if _exists "uid=${uid},ou=People,${BASE_DN}"; then
 		echo "# user ${uid} exists, skip"
 		return
+	fi
+	if [ ! -t 0 ]; then
+		echo "# addUser 需要在交互式终端里运行,以便输入密码" >&2
+		return 1
+	fi
+	read -rsp "Password for ${uid}: " pw
+	echo
+	if [ -z "$pw" ]; then
+		echo "# 密码不能为空" >&2
+		return 1
 	fi
 	_ldap ldapadd <<EOF
 dn: uid=${uid},ou=People,${BASE_DN}
@@ -298,7 +325,7 @@ cn: ${uid}
 sn: ${uid}
 givenName: ${uid}
 mail: ${mail}
-userPassword: ${pw}
+userPassword:: $(printf '%s' "$pw" | base64 -w0)
 EOF
 }
 
@@ -311,8 +338,9 @@ deploy() {
 	idpInject
 }
 
-# 从 pod 内走 Service 域名做 LDAPS 校验 + 用 bob-svc 绑定,等价于 Keycloak 的访问路径
-testLdaps() {
+# 列出 ou=People 下的用户(uid、mail)。走 Service 域名的 LDAPS(校验证书 SAN)并用 bob-svc 绑定,
+# 与 Keycloak 的访问路径一致,所以证书或绑定账号有问题时这里也会报错;目录里没有用户时输出为空。
+listUsers() {
 	local pw
 	pw=$(oc get secret $BIND_SECRET -n ibm-bob -o jsonpath='{.data.password}' | base64 -d)
 	oc exec -n ibm-bob deploy/ds389 -c ds389 -- env LDAPTLS_CACERT=/data/tls/ca/ca.crt LDAPTLS_REQCERT=demand \

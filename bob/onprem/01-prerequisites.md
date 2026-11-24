@@ -91,12 +91,12 @@ oc get storageclass
 
 ## 1.7 准备 LLM 端点
 
-Bob 需要两类模型端点(模型本身的部署不在 Bob 安装范围):
+Bob 需要两类托管模型端点(模型本身不在 Bob 安装范围):
 
-- **核心推理模型**:如 Nvidia Nemotron 3 Ultra
+- **核心推理模型**
 - **Guardrail 模型**:如 `openai/gpt-oss-20b`
 
-支持的 provider 形式:`openai_compatible`(Azure OpenAI、vLLM、RHOAI 等)、`bedrock`、`vertex`。详见 [02-configuration.md](./02-configuration.md)。
+支持的 provider:AWS Bedrock、Azure OpenAI、Google Vertex。详见 [02-configuration.md](./02-configuration.md)。
 
 ## 1.8 DNS 与证书策略(提前决定)
 
@@ -104,6 +104,4 @@ Bob 需要两类模型端点(模型本身的部署不在 Bob 安装范围):
 - 决定使用企业/公共 CA 证书,还是默认自签 CA(`CN=Bob Internal CA`)。`bob-ide` / `bob-shell` 在证书未被信任前无法连接。证书在安装**之后**通过 `bobctl setup-route` 应用,详见 [05-post-install.md](./05-post-install.md)。
 
 ## 检查清单
-
-- [ ] 核心模型与 guardrail 模型端点已就绪且集群可达
 - [ ] 已确定证书策略与 DNS 方案
