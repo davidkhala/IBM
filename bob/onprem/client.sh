@@ -1,19 +1,15 @@
 set -e
 
-# 用法: ./client.sh <function> [args]
-#   getSelfSignedRootCA   从集群导出默认自签 root CA 到 config/bob-ca.crt
-#   endpoints             列出 gateway 的 route host (api.bob.* 为 API 入口, bob.* 为 Web 登录入口)
-#   shell [bob args...]   启动 bob shell
-#							默认走 SSO 浏览器登录。
-#							API key 登陆方式:
+# Usage: ./client.sh <function> [args]
+#   getSelfSignedRootCA   Export the default self-signed root CA from the cluster to config/bob-ca.crt
+#   endpoints             List the gateway route hosts (api.bob.* is the API entry point, bob.* is the web login entry point)
+#   shell [bob args...]   Start bob shell
+#							Uses browser SSO login by default.
+#							To log in with an API key:
 #							- export BOB_API_KEY=<inference-key>; ./client.sh shell
 #							- export BOB_API_KEY=<general-key>; ./client.sh shell --team-id <team-id>
-#   debian-trust-ca       把 root CA 导入 Debian/Ubuntu 系统信任库 (需 sudo), 供 bob-ide 校验 gateway 证书
-#   ide [--system-certs]  启动 bob ide。
-#							接入流程: ./client.sh getSelfSignedRootCA && ./client.sh debian-trust-ca && ./client.sh ide, 然后重启 bob-ide
-
-
-
+#   debian-trust-ca       Import the root CA into the Debian/Ubuntu system trust store (requires sudo) so bob-ide can verify the gateway certificate
+#   ide [--system-certs]  Start bob ide.
 
 cd "$(dirname "$(readlink -f "$0")")"
 
@@ -29,11 +25,11 @@ endpoints() {
 	oc get route -n ibm-bob -l app.kubernetes.io/component=bob-gateway -o jsonpath='{range .items[*]}{.spec.host}{"\n"}{end}'
 }
 
-# 查询路由并设置 GATEWAY_URL (API 入口) / LOGIN_URL (Web 登录入口)
+# Query the routes and export BOB_GATEWAY_URL (API entry point) / BOB_WEB_LOGIN_URL (web login entry point)
 envs() {
 	local hosts=$(endpoints)
-	GATEWAY_URL="https://$(echo "$hosts" | grep '^api\.')"
-	LOGIN_URL="https://$(echo "$hosts" | grep -v '^api\.')"
+	export BOB_GATEWAY_URL="https://$(echo "$hosts" | grep '^api\.')"
+	export BOB_WEB_LOGIN_URL="https://$(echo "$hosts" | grep -v '^api\.')"
 }
 
 debian-trust-ca() {
@@ -47,17 +43,17 @@ ide() {
 	envs
 	filter='.gatewayUrl = $url'
 	if [ "$1" = "--system-certs" ]; then
-		# 导入 CA 并重启后,IDE 仍报 UNABLE_TO_VERIFY_LEAF_SIGNATURE 时,才需要开启它
+		# Only enable this if the IDE still reports UNABLE_TO_VERIFY_LEAF_SIGNATURE after importing the CA and restarting
 		filter="$filter | .\"http.experimental.systemCertificatesV2\" = true"
 	fi
-	updated=$(jq --arg url "$GATEWAY_URL" "$filter" "$settings")
+	updated=$(jq --arg url "$BOB_GATEWAY_URL" "$filter" "$settings")
 	printf '%s\n' "$updated" >"$settings"
 	echo "Please restart Bob IDE"
 }
 
 shell() {
 	envs
-	export NODE_EXTRA_CA_CERTS="$CA_FILE" BOB_GATEWAY_URL="$GATEWAY_URL" BOB_WEB_LOGIN_URL="$LOGIN_URL"
+	export NODE_EXTRA_CA_CERTS="$CA_FILE"
 	case "$1" in
 	chat | run | mcp | extension | acp) ;;
 	*) set -- chat "$@" ;;

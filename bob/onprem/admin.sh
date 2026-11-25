@@ -31,8 +31,8 @@ open() {
 	echo "https://$(oc get routes -n ibm-bob -o json | jq -r '.items[] | select(.spec.to.name=="bob-gateway") | .spec.host | select(startswith("bob."))' | head -1)"
 	xdg-open "https://$(oc get routes -n ibm-bob -o json | jq -r '.items[] | select(.spec.to.name=="bob-gateway") | .spec.host | select(startswith("bob."))' | head -1)"
 }
-# 按邮箱追踪一次登录: Keycloak 认证 -> bob-authn 权限查询 -> bob-admin 的 SCIM 开通
-# 用法: ./admin.sh loginTrace alice@example.com   (SINCE=30m 可调整时间范围,默认 15m)
+# Trace a login by email: Keycloak authentication -> bob-authn permission query -> bob-admin SCIM provisioning
+# Usage: ./admin.sh loginTrace alice@example.com   (SINCE=30m adjusts the time range, default 15m)
 loginTrace() {
 	local email=${1:?usage: ./admin.sh loginTrace <email>} since=${SINCE:-15m}
 	local user=${email%@*}
@@ -129,7 +129,7 @@ certmanStatus() {
 	# Verify installation
 	oc get csv -n cert-manager-operator
 	oc get pods -n cert-manager
-	oc get crd certificates.cert-manager.io issuers.cert-manager.io clusterissuers.cert-manager.io certificaterequests.cert-manager.io # 核心 CRD 存在检查
+	oc get crd certificates.cert-manager.io issuers.cert-manager.io clusterissuers.cert-manager.io certificaterequests.cert-manager.io # check that the core CRDs exist
 }
 gcp() {
 	local path_to_json=$1

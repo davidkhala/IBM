@@ -1,27 +1,26 @@
 set -e
 
-# 在 OpenShift(CRC) 内部署 389ds,作为 BobIdp 的 rhds LDAPS 后端。
-# 用法: ./389ds.sh <函数> [参数]
-#   ./389ds.sh deploy                         # 证书 + 部署 + 初始化目录 + 创建 bobctl 需要的 Secret
-#   ./389ds.sh addUser <uid> <mail>           # 密码在提示符处交互输入
-#   ./389ds.sh status | listUsers | idpInject [配置文件] | uninstall
+# Deploy 389ds inside OpenShift (CRC) as the rhds LDAPS backend for BobIdp.
+# Usage: ./ldap.sh <function> [args]
+#   ./ldap.sh deploy                         # certificates + deployment + directory init + create the Secrets bobctl needs
+#   ./ldap.sh addUser <uid> <mail>           # password is entered interactively at the prompt
+#   ./ldap.sh status | listUsers | idpInject [config file] | uninstall
 #
-# 命名空间固定为 ibm-bob,Service 固定为 ds389,镜像固定为 quay.io/389ds/dirsrv:latest,均直接写在用到的地方。
-# LDAPS 地址: ldaps://ds389.ibm-bob.svc.cluster.local:636  (证书 SAN 与之一致;
-# 改 Service 名或命名空间时,要同时改 certs 的 dnsNames、workload 的 Service、listUsers、_idpItem)
+# LDAPS address: ldaps://ds389.ibm-bob.svc.cluster.local:636  (matches the certificate SAN;
+# if you change the Service name or namespace, also change the dnsNames in certs, the Service in workload, listUsers, and _idpItem)
 
 BASE_DN=${BASE_DN:-dc=example,dc=com}
 STORAGE=${STORAGE:-2Gi}
-# BobIdp 里这个 LDAP provider 的名字(Keycloak 组件显示名,首次配置后不要再改)
+# Name of this LDAP provider in BobIdp (Keycloak component display name; do not change after the initial configuration)
 IDP_NAME=389-ds
-IDP_CONFIG="$(cd "$(dirname "$0")" && pwd)/config/config-idp.yaml"
-# bobctl configure-idp 引用的 Secret 名,需与 config-idp.yaml 一致
+IDP_CONFIG="$(cd "$(dirname "$0")" && pwd)/../../config/config-idp.yaml"
+# Secret names referenced by bobctl configure-idp; must match config-idp.yaml
 BIND_SECRET=${BIND_SECRET:-corp-ldap-bind}
 CA_SECRET=${CA_SECRET:-corp-ldap-ca}
 BIND_DN="cn=bob-svc,ou=ServiceAccounts,${BASE_DN}"
 
 
-# 用 cert-manager 签发: 自签 CA -> CA Issuer -> 服务器证书(Secret ds389-tls: tls.crt/tls.key/ca.crt)
+# Issue with cert-manager: self-signed CA -> CA Issuer -> server certificate (Secret ds389-tls: tls.crt/tls.key/ca.crt)
 certs() {
 	oc apply -n ibm-bob -f - <<EOF
 apiVersion: cert-manager.io/v1
@@ -82,7 +81,7 @@ EOF
 	oc wait -n ibm-bob --for=condition=Ready certificate/ds389-ca certificate/ds389-tls --timeout=120s
 }
 
-# Directory Manager 密码,只在不存在时生成
+# Directory Manager password; generated only if it does not already exist
 adminSecret() {
 	if oc get secret ds389-admin -n ibm-bob >/dev/null 2>&1; then
 		echo "# secret ds389-admin exists, skip"
@@ -91,8 +90,8 @@ adminSecret() {
 	oc create secret generic ds389-admin -n ibm-bob --from-literal=password="$(openssl rand -hex 16)"
 }
 
-# dscontainer 启动时会读 /data/tls/{server.key,server.crt,ca/*.crt} 自动导入 NSS,
-# 所以把 Secret 按这个布局投影到 /data/tls。
+# On startup, dscontainer reads /data/tls/{server.key,server.crt,ca/*.crt} and imports them into NSS automatically,
+# so the Secret is projected into /data/tls using this layout.
 workload() {
 	oc apply -n ibm-bob -f - <<EOF
 apiVersion: v1
@@ -193,8 +192,8 @@ EOF
 	waitDmPassword
 }
 
-# readinessProbe 只检查 LDAPI 自动绑定,而 dscontainer 先用临时密码初始化、稍后才把 DS_DM_PASSWORD 设进去,
-# 所以 Pod Ready 时密码可能还没生效(此时绑定会报 49 Invalid credentials)。这里用密码真实绑定一次,成功才继续。
+# The readinessProbe only checks the LDAPI auto-bind, while dscontainer initializes with a temporary password and only later sets DS_DM_PASSWORD,
+# so the password may not be in effect yet when the Pod is Ready (a bind then fails with 49 Invalid credentials). Here we do a real bind with the password and continue only once it succeeds.
 waitDmPassword() {
 	local i
 	for i in $(seq 1 30); do
@@ -204,12 +203,12 @@ waitDmPassword() {
 		fi
 		sleep 2
 	done
-	echo "# Directory Manager 密码 60 秒内未生效,检查: oc logs -n ibm-bob deploy/ds389" >&2
+	echo "# Directory Manager password did not take effect within 60 seconds; check: oc logs -n ibm-bob deploy/ds389" >&2
 	return 1
 }
 
-# 在 ds389 pod 里以 Directory Manager 身份执行 ldap 命令,密码取自 pod 环境变量
-# 用法: _ldap <命令及参数...>  (stdin 透传,用于 ldapadd 的 LDIF)
+# Run an ldap command inside the ds389 pod as Directory Manager; the password is taken from the pod environment variable
+# Usage: _ldap <command and args...>  (stdin is passed through, used for the LDIF of ldapadd)
 _ldap() {
 	local cmd=$1
 	shift
@@ -221,7 +220,7 @@ _exists() {
 	_ldap ldapsearch -LLL -s base -b "$1" dn >/dev/null 2>&1
 }
 
-# 创建 suffix + 基础 OU + bob-svc 绑定账号;可重复执行
+# Create the suffix + base OUs + the bob-svc bind account; safe to run repeatedly
 initDirectory() {
 	if oc exec -n ibm-bob deploy/ds389 -c ds389 -- sh -c \
 		'dsconf -D "cn=Directory Manager" -w "$DS_DM_PASSWORD" ldap://localhost:3389 backend suffix list' |
@@ -249,7 +248,7 @@ EOF
 	bindAccount
 }
 
-# bob-svc: 随机密码,写入 Secret ${BIND_SECRET}(key=password)
+# bob-svc: random password, written to Secret ${BIND_SECRET} (key=password)
 bindAccount() {
 	if oc get secret $BIND_SECRET -n ibm-bob >/dev/null 2>&1; then
 		echo "# secret ${BIND_SECRET} exists, skip bind account"
@@ -272,7 +271,7 @@ uid: bob-svc
 userPassword: ${pw}
 EOF
 	fi
-	# 绑定账号需要能搜索 People/Groups
+	# The bind account must be able to search People/Groups
 	_ldap ldapmodify <<EOF
 dn: ${BASE_DN}
 changetype: modify
@@ -282,7 +281,7 @@ EOF
 	oc create secret generic $BIND_SECRET -n ibm-bob --from-literal=password="$pw"
 }
 
-# bobctl 的 ldapsCACertSecret(key=ca.crt)
+# bobctl's ldapsCACertSecret (key=ca.crt)
 caSecret() {
 	if oc get secret $CA_SECRET -n ibm-bob >/dev/null 2>&1; then
 		echo "# secret ${CA_SECRET} exists, skip"
@@ -305,13 +304,13 @@ addUser() {
 		return
 	fi
 	if [ ! -t 0 ]; then
-		echo "# addUser 需要在交互式终端里运行,以便输入密码" >&2
+		echo "# addUser must be run in an interactive terminal so the password can be entered" >&2
 		return 1
 	fi
 	read -rsp "Password for ${uid}: " pw
 	echo
 	if [ -z "$pw" ]; then
-		echo "# 密码不能为空" >&2
+		echo "# password must not be empty" >&2
 		return 1
 	fi
 	_ldap ldapadd <<EOF
@@ -338,8 +337,8 @@ deploy() {
 	idpInject
 }
 
-# 列出 ou=People 下的用户(uid、mail)。走 Service 域名的 LDAPS(校验证书 SAN)并用 bob-svc 绑定,
-# 与 Keycloak 的访问路径一致,所以证书或绑定账号有问题时这里也会报错;目录里没有用户时输出为空。
+# List the users under ou=People (uid, mail). Uses LDAPS via the Service hostname (validating the certificate SAN) and binds as bob-svc,
+# the same access path as Keycloak, so this also fails if the certificate or bind account has a problem; the output is empty when the directory has no users.
 listUsers() {
 	local pw
 	pw=$(oc get secret $BIND_SECRET -n ibm-bob -o jsonpath='{.data.password}' | base64 -d)
@@ -347,14 +346,14 @@ listUsers() {
 		ldapsearch -LLL -H "ldaps://ds389.ibm-bob.svc.cluster.local:636" -D "$BIND_DN" -w "$pw" -b "ou=People,${BASE_DN}" -s one uid mail
 }
 
-# 从 Keycloak pod 里测试到 389ds LDAPS 端口的 TCP 连通性(验证 Service 域名解析和网络策略)
+# Test TCP connectivity from the Keycloak pod to the 389ds LDAPS port (verifies Service DNS resolution and network policy)
 testFromKeycloak() {
 	oc exec -n ibm-bob bob-keycloak-0 -c keycloak -- bash -c \
 		'timeout 5 bash -c "echo > /dev/tcp/ds389.ibm-bob.svc.cluster.local/636"' &&
 		echo "# reachable from keycloak" || { echo "# unreachable from keycloak" >&2; return 1; }
 }
 
-# 要加入 ldaps 的列表项(2 空格缩进的 "- ",字段 4 空格,与 configure-idp.sh 的解析一致)
+# The list item to add to ldaps ("- " indented by 2 spaces, fields indented by 4 spaces, consistent with how configure-idp.sh parses it)
 _idpItem() {
 	cat <<EOF
   - name: ${IDP_NAME}
@@ -378,12 +377,12 @@ _idpItem() {
 EOF
 }
 
-# 只往 config-idp.yaml 的 ldaps 里追加一个列表项,不改动其余任何内容(模板、注释、其他项)。
-#   - 已有名为 ${IDP_NAME} 的项:        跳过
-#   - 没有顶层 ldaps: (仍是注释):       报错退出。取消注释是手工的事,脚本不做
-#   - 顶层 ldaps: 下没有真实列表项:      新项紧贴在 ldaps: 之后,参考注释块顺延到新项后面
-#   - 顶层 ldaps: 下已有真实列表项:      新项追加到最后一项之后
-# 新项必须在参考注释块之前: configure-idp.sh 遇到第 0 列的非空行(含 # 注释)就认为 ldaps 块结束。
+# Only append one list item to ldaps in config-idp.yaml, leaving everything else untouched (template, comments, other items).
+#   - An item named ${IDP_NAME} already exists:           skip
+#   - No top-level ldaps: (still commented out):          exit with an error. Uncommenting is a manual task; the script does not do it
+#   - No real list items under top-level ldaps::          the new item goes right after ldaps:, and the reference comment block follows it
+#   - Real list items already exist under top-level ldaps: the new item is appended after the last item
+# The new item must come before the reference comment block: configure-idp.sh treats a non-empty line at column 0 (including # comments) as the end of the ldaps block.
 idpInject() {
 	local file=${1:-$IDP_CONFIG} tmp
 	if [ ! -f "$file" ]; then
@@ -395,12 +394,12 @@ idpInject() {
 		return
 	fi
 	if ! grep -qE '^ldaps:[[:space:]]*(#.*)?$' "$file"; then
-		echo "# $file 里没有顶层 'ldaps:' (被注释了?),请先手工取消注释,再重新执行" >&2
+		echo "# $file has no top-level 'ldaps:' (commented out?); uncomment it manually first, then re-run" >&2
 		return 1
 	fi
 	tmp=$(mktemp)
-	# 方案: 新项紧贴在 "ldaps:" 之后,其后的参考注释块原封不动。
-	# 若 ldaps 下已有真实列表项 ("  - "),则插在最后一项的末尾,保持各项连续。
+	# Approach: the new item goes right after "ldaps:", and the reference comment block after it is left as is.
+	# If ldaps already has real list items ("  - "), insert after the end of the last item so the items stay contiguous.
 	ITEM="$(_idpItem)" awk '
 		{ l[NR] = $0 }
 		END {
@@ -415,7 +414,7 @@ idpInject() {
 			print ENVIRON["ITEM"]
 			for (i = last + 1; i <= NR; i++) print l[i]
 		}' "$file" >"$tmp"
-	echo "# $file: 追加 ldaps 项 '${IDP_NAME}',变更如下:"
+	echo "# $file: appending ldaps item '${IDP_NAME}', changes:"
 	diff -u "$file" "$tmp" || true
 	cat "$tmp" >"$file"
 	rm -f "$tmp"
@@ -431,7 +430,7 @@ uninstall() {
 	oc delete certificate ds389-tls ds389-ca -n ibm-bob --ignore-not-found
 	oc delete issuer ds389-ca-issuer ds389-selfsigned -n ibm-bob --ignore-not-found
 	oc delete secret ds389-tls ds389-ca ds389-admin $BIND_SECRET $CA_SECRET -n ibm-bob --ignore-not-found
-	echo "# PVC ds389-data 保留; 彻底清除: oc delete pvc ds389-data -n ibm-bob"
+	echo "# To remove PVC ds389-data completely, run `oc delete pvc ds389-data -n ibm-bob`"
 }
 
 $@

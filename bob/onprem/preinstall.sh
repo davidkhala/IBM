@@ -1,7 +1,6 @@
 set -e
 
 binCheck() {
-
 	helm version
 
 	local helm_min="3.14.0"
@@ -13,15 +12,16 @@ binCheck() {
 	fi
 	bash --version
 	openssl version
-	oc version --client # 不强制匹配server版本
+	oc version --client # a match with the server version is not enforced
 
 }
 ocCheck() {
-	oc get clusterversion
+	oc whoami # kubeadmin
+	oc whoami --show-server # https://api.crc.testing:6443
 
-	local oc_min="4.20.0" # VERSION 须为 >= 4.20
+	local oc_min="4.20.0" # VERSION must be >= 4.20
 	local oc_ver
-	# history 按时间倒序,取最近一个 state=Completed 的版本(升级中的 Partial 条目会被忽略)
+	# history is in reverse chronological order; take the latest version with state=Completed (Partial entries from an in-progress upgrade are ignored)
 	oc_ver=$(oc get clusterversion version -o jsonpath='{.status.history[?(@.state=="Completed")].version}' | awk '{print $1}' | sed 's/[-+].*//')
 	if [ -z "$oc_ver" ]; then
 		echo "ERROR: unable to determine completed OpenShift server version" >&2

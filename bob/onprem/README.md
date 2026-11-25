@@ -1,24 +1,18 @@
 # IBM Bob Self-hosted on OpenShift — Runbook
 
-在 Red Hat OpenShift Container Platform (OCP) 上安装 IBM Bob self-hosted 的操作手册,依据 [IBM Bob 官方文档](https://bob.ibm.com/docs/ide/enterprise/on-premises/installation) 整理。安装通过发行包中的 `bobctl` 完成。
+在 Red Hat OpenShift Container Platform (OCP) 上安装 IBM Bob self-hosted 的操作手册,依据 [IBM Bob 官方文档](https://bob.ibm.com/docs/ide/enterprise/on-premises/installation) 整理。
 
 ## 执行顺序
 
-| 步骤 | Runbook | 内容 |
-| ---- | ------- | ---- |
-| 1 | [01-prerequisites.md](./01-prerequisites.md) | 工作站工具、发行包、权限、entitlement key、cert-manager、LLM |
-| 2 | [02-configuration.md](./02-configuration.md) | `config.yaml`、`model-gateway.yaml`、IDP 配置 |
-| 3 | [03-install.md](./03-install.md) | 集群级资源、`bobctl install` |
-| 4 | [04-verify.md](./04-verify.md) | 安装验证与常见故障排查 |
-| 5 | [05-post-install.md](./05-post-install.md) | TLS 证书、IDP/LDAP、用户、下发 endpoint |
-| 6 | [06-uninstall.md](./06-uninstall.md) | 卸载 |
+1. [prerequisites](./docs/01-prerequisites.md)
+2. [configuration.md](./docs/02-configuration.md)
+3. [install.md](./docs/03-install.md)
+4. [post-install.md](./docs/04-post-install.md)
 
 每个阶段必须完成后才能进入下一阶段。
 
 ## 架构要点
 
-- 两个命名空间:Operator namespace(默认 `ibm-bob-operators`)与 Instance namespace(默认 `ibm-bob`),均由 `bobctl` 自动创建,**不要手工创建**。
-- 两步部署:先由 cluster-admin 应用集群级资源(CRD、ClusterRole 等),再运行 `bobctl install`(仅在两个命名空间内操作)。
 
 
 ## 敏感信息
