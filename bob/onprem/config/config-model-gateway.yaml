@@ -36,7 +36,7 @@ x-providers:
   azure: &azure
     openai_compatible:
       model: gpt-5.6-sol                          # Model ID as expected by the provider
-      base_url: https://ai-sg.cognitiveservices.azure.com/openai # TODO 
+      base_url: https://ai-sg.services.ai.azure.com/openai # TODO 
       api_key: env.AZURE_API_KEY              # env.<VAR> reads from the model gateway secrets
     model_info:
       exposed: true
@@ -52,15 +52,15 @@ x-providers:
   # AWS Bedrock
   bedrock: &bedrock
     bedrock:
-      model: us.anthropic.claude-sonnet-5
-      region: us-east-1                           # AWS region where your Bedrock endpoint lives
-      access_key_id: env.AWS_ACCESS_KEY           # env.<VAR> reads from the model gateway secrets
+      model: global.amazon.nova-2-lite-v1:0     # TODO
+      region: ap-southeast-1                    # AWS region where your Bedrock endpoint lives
+      access_key_id: env.AWS_ACCESS_KEY         # env.<VAR> reads from the model gateway secrets
       secret_access_key: env.AWS_SECRET_ACCESS_KEY
     model_info:
       exposed: true
-      provider: anthropic
-      family: sonnet
-      version: "5"
+      provider: anthropic                       # No need to align to model
+      family: sonnet                            # No need to align to model
+      version: "5"                              # No need to align to model
       max_input_tokens: 270000
       max_output_tokens: 20000
       supports_prompt_caching: true
@@ -109,16 +109,14 @@ models:
   # Change <<: *isvc to eg. *azure, *bedrock, or *gemini to
   # switch providers / models to one fully configured above
   - &chat_llm
-    <<: *gemini                      # ← TODO change provider here
+    <<: *azure                     # ← TODO change provider here
     model_name: premium-ide
-    model_info:
-      exposed: true
 
   # ── Aliases ───────────────────────────────────────────────────────────────────
-  - <<: *chat_llm
-    model_name: security
+  - <<: *bedrock                    # ← TODO change provider here
+    model_name: security            
 
-  - <<: *chat_llm
+  - <<: *gemini                     # ← TODO change provider here
     model_name: background
 
 
